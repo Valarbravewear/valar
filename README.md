@@ -14,7 +14,7 @@ Open Supabase → SQL Editor → New query, paste `schema.sql`, and run it.
 
 In Supabase Authentication → Users, create a user with:
 
-Email: `fca.valar@gmail.com`
+Email: `mejaalex33@gmail.com','mercydrainagecuthanasia@gmail.com'
 
 Use a strong password and keep it private.
 
