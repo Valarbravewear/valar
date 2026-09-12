@@ -1373,3 +1373,70 @@ select:focus {
 #stockRequestBackdrop .checkout-summary {
   margin-top: 8px;
 }
+/* =========================================================
+   MOBILE MONEY PHONE INPUT
+========================================================= */
+
+#mobileMoneyFields {
+  margin-top: 10px;
+}
+
+#mobileMoneyFields label {
+  display: block;
+  width: 100%;
+}
+
+#mobileMoneyPhone {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  margin-top: 8px;
+
+  box-sizing: border-box;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+
+  color: #111;
+  background: #fff;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#mobileMoneyPhone:focus {
+  border-color: #650d22;
+  box-shadow: 0 0 0 3px rgba(101, 13, 34, 0.10);
+}
+
+#mobileMoneyPhone::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+#mobileMoneyFields .small-note {
+  margin-top: 7px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MOBILE MONEY INPUT — SMALL SCREENS
+========================================================= */
+
+@media (max-width: 600px) {
+
+  #mobileMoneyPhone {
+    min-height: 50px;
+    padding: 13px 14px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+}
