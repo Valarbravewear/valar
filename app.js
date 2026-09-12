@@ -3,11 +3,6 @@
    SUPABASE + ONEKHUSA PAYMENT VERSION
 ========================================================= */
 
-
-/* =========================================================
-   STATE
-========================================================= */
-
 let products = [];
 
 let cart = JSON.parse(
@@ -60,7 +55,7 @@ function escapeHtml(value) {
 
 
 /* =========================================================
-   PRODUCT IMAGE HTML
+   PRODUCT IMAGE
 ========================================================= */
 
 function productImage(product) {
@@ -87,12 +82,10 @@ function productImage(product) {
 
   return `
     <div class="placeholder">
-
       ${escapeHtml(
         (product.name || "VALAR")
           .split(" ")[0]
       )}
-
     </div>
   `;
 
@@ -100,15 +93,13 @@ function productImage(product) {
 
 
 /* =========================================================
-   LOAD PRODUCTS FROM SUPABASE
+   LOAD PRODUCTS
 ========================================================= */
 
 async function loadProducts() {
 
   const grid =
-    document.getElementById(
-      "productGrid"
-    );
+    document.getElementById("productGrid");
 
 
   if (!grid) {
@@ -118,17 +109,11 @@ async function loadProducts() {
 
   if (!window.valarSupabase) {
 
-    console.error(
-      "VALAR Supabase client is not configured."
-    );
-
-
     grid.innerHTML = `
       <div class="loading">
         Store connection is not configured.
       </div>
     `;
-
 
     return;
   }
@@ -173,7 +158,6 @@ async function loadProducts() {
         </div>
       `;
 
-
       return;
     }
 
@@ -183,11 +167,6 @@ async function loadProducts() {
         ? data
         : [];
 
-
-    /*
-      Remove products from cart that
-      are no longer active/available.
-    */
 
     cart =
       cart.filter(item => {
@@ -244,9 +223,7 @@ async function loadProducts() {
 function renderFilters() {
 
   const filters =
-    document.getElementById(
-      "filters"
-    );
+    document.getElementById("filters");
 
 
   if (!filters) {
@@ -329,9 +306,7 @@ function renderFilters() {
 function renderProducts() {
 
   const grid =
-    document.getElementById(
-      "productGrid"
-    );
+    document.getElementById("productGrid");
 
 
   if (!grid) {
@@ -357,7 +332,6 @@ function renderProducts() {
       </div>
     `;
 
-
     return;
   }
 
@@ -365,10 +339,6 @@ function renderProducts() {
   grid.innerHTML =
     list
       .map(product => {
-
-        const image =
-          productImage(product);
-
 
         const soldOut =
           Number(product.stock) <= 0;
@@ -381,9 +351,7 @@ function renderProducts() {
           >
 
             <div class="product-photo">
-
-              ${image}
-
+              ${productImage(product)}
             </div>
 
 
@@ -459,7 +427,6 @@ function addToCart(id) {
       "This product is currently sold out."
     );
 
-
     return;
   }
 
@@ -488,7 +455,6 @@ function addToCart(id) {
       alert(
         "You cannot add more than the available stock."
       );
-
 
       return;
     }
@@ -540,9 +506,7 @@ function saveCart(render = true) {
 
 
   if (render) {
-
     renderCart();
-
   }
 
 }
@@ -615,7 +579,6 @@ function changeQty(id, amount) {
       "You have reached the available stock."
     );
 
-
     return;
   }
 
@@ -671,27 +634,16 @@ function cartTotal() {
 function renderCart() {
 
   const cartCount =
-    document.getElementById(
-      "cartCount"
-    );
-
+    document.getElementById("cartCount");
 
   const cartTotalElement =
-    document.getElementById(
-      "cartTotal"
-    );
-
+    document.getElementById("cartTotal");
 
   const checkoutTotal =
-    document.getElementById(
-      "checkoutTotal"
-    );
-
+    document.getElementById("checkoutTotal");
 
   const cartItems =
-    document.getElementById(
-      "cartItems"
-    );
+    document.getElementById("cartItems");
 
 
   if (
@@ -700,7 +652,6 @@ function renderCart() {
     !checkoutTotal ||
     !cartItems
   ) {
-
     return;
   }
 
@@ -733,7 +684,6 @@ function renderCart() {
         Your cart is empty.
       </div>
     `;
-
 
     return;
   }
@@ -775,9 +725,7 @@ function renderCart() {
           <div class="cart-item">
 
             <div class="mini-photo">
-
               ${photo}
-
             </div>
 
 
@@ -845,142 +793,68 @@ function renderCart() {
 
 
 /* =========================================================
-   OPEN CART
+   CART OPEN/CLOSE
 ========================================================= */
 
 function openCart() {
 
-  const drawer =
-    document.getElementById(
-      "cartDrawer"
-    );
+  document
+    .getElementById("cartDrawer")
+    ?.classList.add("show");
 
-
-  const backdrop =
-    document.getElementById(
-      "drawerBackdrop"
-    );
-
-
-  if (drawer) {
-    drawer.classList.add("show");
-  }
-
-
-  if (backdrop) {
-    backdrop.classList.add("show");
-  }
+  document
+    .getElementById("drawerBackdrop")
+    ?.classList.add("show");
 
 }
 
-
-/* =========================================================
-   CLOSE CART
-========================================================= */
 
 function closeCart() {
 
-  const drawer =
-    document.getElementById(
-      "cartDrawer"
-    );
+  document
+    .getElementById("cartDrawer")
+    ?.classList.remove("show");
 
-
-  const backdrop =
-    document.getElementById(
-      "drawerBackdrop"
-    );
-
-
-  if (drawer) {
-    drawer.classList.remove("show");
-  }
-
-
-  if (backdrop) {
-    backdrop.classList.remove("show");
-  }
+  document
+    .getElementById("drawerBackdrop")
+    ?.classList.remove("show");
 
 }
 
 
-/* =========================================================
-   CART EVENTS
-========================================================= */
-
-const openCartButton =
-  document.getElementById(
-    "openCart"
-  );
-
-
-const closeCartButton =
-  document.getElementById(
-    "closeCart"
-  );
-
-
-const drawerBackdrop =
-  document.getElementById(
-    "drawerBackdrop"
-  );
-
-
-if (openCartButton) {
-
-  openCartButton.addEventListener(
+document
+  .getElementById("openCart")
+  ?.addEventListener(
     "click",
     openCart
   );
 
-}
 
-
-if (closeCartButton) {
-
-  closeCartButton.addEventListener(
+document
+  .getElementById("closeCart")
+  ?.addEventListener(
     "click",
     closeCart
   );
 
-}
 
-
-if (drawerBackdrop) {
-
-  drawerBackdrop.addEventListener(
+document
+  .getElementById("drawerBackdrop")
+  ?.addEventListener(
     "click",
     closeCart
   );
-
-}
 
 
 /* =========================================================
    CHECKOUT
 ========================================================= */
 
-const checkoutButton =
-  document.getElementById(
-    "checkoutButton"
-  );
-
-
 const checkoutBackdrop =
   document.getElementById(
     "checkoutBackdrop"
   );
 
-
-const closeCheckoutButton =
-  document.getElementById(
-    "closeCheckout"
-  );
-
-
-/* =========================================================
-   OPEN CHECKOUT FORM
-========================================================= */
 
 function openCheckout() {
 
@@ -994,102 +868,64 @@ function openCheckout() {
   }
 
 
-  const checkoutTotal =
-    document.getElementById(
-      "checkoutTotal"
+  document
+    .getElementById("checkoutTotal")
+    ?.replaceChildren(
+      document.createTextNode(
+        money(cartTotal())
+      )
     );
-
-
-  if (checkoutTotal) {
-
-    checkoutTotal.textContent =
-      money(cartTotal());
-
-  }
 
 
   closeCart();
 
-
-  if (checkoutBackdrop) {
-
-    checkoutBackdrop.classList.add(
-      "show"
-    );
-
-  }
+  checkoutBackdrop?.classList.add("show");
 
 }
 
 
-/* =========================================================
-   CHECKOUT BUTTON
-========================================================= */
+function closeCheckout() {
 
-if (checkoutButton) {
+  checkoutBackdrop?.classList.remove("show");
 
-  checkoutButton.addEventListener(
+}
+
+
+document
+  .getElementById("checkoutButton")
+  ?.addEventListener(
     "click",
     openCheckout
   );
 
-}
 
-
-/* =========================================================
-   CLOSE CHECKOUT
-========================================================= */
-
-function closeCheckout() {
-
-  if (checkoutBackdrop) {
-
-    checkoutBackdrop.classList.remove(
-      "show"
-    );
-
-  }
-
-}
-
-
-if (closeCheckoutButton) {
-
-  closeCheckoutButton.addEventListener(
+document
+  .getElementById("closeCheckout")
+  ?.addEventListener(
     "click",
     closeCheckout
   );
 
-}
 
+checkoutBackdrop?.addEventListener(
+  "click",
+  event => {
 
-/* =========================================================
-   CLOSE WHEN CLICKING OUTSIDE FORM
-========================================================= */
+    if (
+      event.target ===
+      checkoutBackdrop
+    ) {
 
-if (checkoutBackdrop) {
-
-  checkoutBackdrop.addEventListener(
-    "click",
-    function (event) {
-
-      if (
-        event.target ===
-        checkoutBackdrop
-      ) {
-
-        closeCheckout();
-
-      }
+      closeCheckout();
 
     }
-  );
 
-}
+  }
+);
 
 
 /* =========================================================
-   PAYMENT ELEMENTS
+   PAYMENT UI
 ========================================================= */
 
 const paymentMethod =
@@ -1097,30 +933,25 @@ const paymentMethod =
     "paymentMethod"
   );
 
-
 const paymentInstructions =
   document.getElementById(
     "paymentInstructions"
   );
-
 
 const paymentTitle =
   document.getElementById(
     "paymentTitle"
   );
 
-
 const paymentText =
   document.getElementById(
     "paymentText"
   );
 
-
 const mobileMoneyFields =
   document.getElementById(
     "mobileMoneyFields"
   );
-
 
 const mobileMoneyPhone =
   document.getElementById(
@@ -1128,30 +959,21 @@ const mobileMoneyPhone =
   );
 
 
-/* =========================================================
-   PAYMENT INSTRUCTIONS
-========================================================= */
-
 function updatePaymentInstructions() {
 
-  if (!paymentMethod) {
-    return;
-  }
-
-
   const method =
-    paymentMethod.value;
+    paymentMethod?.value || "";
+
+
+  const mobile =
+    method === "Airtel Money" ||
+    method === "Mpamba";
 
 
   if (mobileMoneyFields) {
 
     mobileMoneyFields.hidden =
-      !(
-        method ===
-          "Airtel Money" ||
-        method ===
-          "Mpamba"
-      );
+      !mobile;
 
   }
 
@@ -1159,12 +981,7 @@ function updatePaymentInstructions() {
   if (mobileMoneyPhone) {
 
     mobileMoneyPhone.required =
-      (
-        method ===
-          "Airtel Money" ||
-        method ===
-          "Mpamba"
-      );
+      mobile;
 
   }
 
@@ -1179,22 +996,11 @@ function updatePaymentInstructions() {
     paymentInstructions.hidden =
       false;
 
+    paymentTitle.textContent =
+      "Airtel Money";
 
-    if (paymentTitle) {
-
-      paymentTitle.textContent =
-        "Airtel Money";
-
-    }
-
-
-    if (paymentText) {
-
-      paymentText.textContent =
-        "After placing your order, OneKhusa will open a secure payment checkout where you can authorize your Airtel Money payment.";
-
-    }
-
+    paymentText.textContent =
+      "After placing your order, VALAR will generate your OneKhusa payment request.";
 
   }
 
@@ -1203,22 +1009,11 @@ function updatePaymentInstructions() {
     paymentInstructions.hidden =
       false;
 
+    paymentTitle.textContent =
+      "TNM Mpamba";
 
-    if (paymentTitle) {
-
-      paymentTitle.textContent =
-        "TNM Mpamba";
-
-    }
-
-
-    if (paymentText) {
-
-      paymentText.textContent =
-        "After placing your order, OneKhusa will open a secure payment checkout where you can authorize your TNM Mpamba payment.";
-
-    }
-
+    paymentText.textContent =
+      "After placing your order, VALAR will generate your OneKhusa payment request.";
 
   }
 
@@ -1230,22 +1025,11 @@ function updatePaymentInstructions() {
     paymentInstructions.hidden =
       false;
 
+    paymentTitle.textContent =
+      "Cash payment";
 
-    if (paymentTitle) {
-
-      paymentTitle.textContent =
-        "Cash payment";
-
-    }
-
-
-    if (paymentText) {
-
-      paymentText.textContent =
-        "Pay cash when your order is delivered or when you collect it.";
-
-    }
-
+    paymentText.textContent =
+      "Pay cash when your order is delivered or when you collect it.";
 
   }
 
@@ -1257,22 +1041,11 @@ function updatePaymentInstructions() {
     paymentInstructions.hidden =
       false;
 
+    paymentTitle.textContent =
+      "Visa Card";
 
-    if (paymentTitle) {
-
-      paymentTitle.textContent =
-        "Visa Card";
-
-    }
-
-
-    if (paymentText) {
-
-      paymentText.textContent =
-        "Online Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or cash.";
-
-    }
-
+    paymentText.textContent =
+      "Online Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or cash.";
 
   }
 
@@ -1286,14 +1059,10 @@ function updatePaymentInstructions() {
 }
 
 
-if (paymentMethod) {
-
-  paymentMethod.addEventListener(
-    "change",
-    updatePaymentInstructions
-  );
-
-}
+paymentMethod?.addEventListener(
+  "change",
+  updatePaymentInstructions
+);
 
 
 /* =========================================================
@@ -1346,10 +1115,8 @@ async function createValarOrder({
 
     payment_provider:
       (
-        payment ===
-          "Airtel Money" ||
-        payment ===
-          "Mpamba"
+        payment === "Airtel Money" ||
+        payment === "Mpamba"
       )
         ? "OneKhusa"
         : null,
@@ -1377,7 +1144,6 @@ async function createValarOrder({
       "Order creation error:",
       orderError
     );
-
 
     throw new Error(
       "ORDER_CREATE_FAILED"
@@ -1475,7 +1241,7 @@ async function startOneKhusaPayment(
 ) {
 
   console.log(
-    "Starting OneKhusa payment for:",
+    "Starting OneKhusa payment:",
     orderNumber
   );
 
@@ -1489,18 +1255,14 @@ async function startOneKhusaPayment(
           "POST",
 
         headers: {
-
           "Content-Type":
             "application/json"
-
         },
 
         body:
           JSON.stringify({
-
             orderNumber:
               orderNumber
-
           })
 
       }
@@ -1512,7 +1274,6 @@ async function startOneKhusaPayment(
 
 
   let result;
-
 
   try {
 
@@ -1526,10 +1287,9 @@ async function startOneKhusaPayment(
   catch {
 
     console.error(
-      "Invalid payment function response:",
+      "Invalid create-payment response:",
       responseText
     );
-
 
     throw new Error(
       "PAYMENT_FUNCTION_INVALID_RESPONSE"
@@ -1538,17 +1298,16 @@ async function startOneKhusaPayment(
   }
 
 
+  console.log(
+    "OneKhusa response:",
+    result
+  );
+
+
   if (
     !response.ok ||
-    !result.success ||
-    !result.checkoutUrl
+    !result.success
   ) {
-
-    console.error(
-      "OneKhusa payment error:",
-      result
-    );
-
 
     throw new Error(
       result.error ||
@@ -1558,7 +1317,18 @@ async function startOneKhusaPayment(
   }
 
 
-  return result.checkoutUrl;
+  if (
+    !result.timedAccountNumber
+  ) {
+
+    throw new Error(
+      "OneKhusa did not return a payment number."
+    );
+
+  }
+
+
+  return result;
 
 }
 
@@ -1599,6 +1369,90 @@ function showOrderResult(
 
 
 /* =========================================================
+   SHOW ONEKHUSA PAYMENT DETAILS
+========================================================= */
+
+function showOneKhusaPayment(
+  orderNumber,
+  result
+) {
+
+  const orderResult =
+    document.getElementById(
+      "orderResult"
+    );
+
+
+  if (!orderResult) {
+    return;
+  }
+
+
+  const tan =
+    result.timedAccountNumber;
+
+
+  const expiry =
+    result.expiryInMinutes ||
+    15;
+
+
+  orderResult.innerHTML = `
+
+    <strong>
+      Order ${escapeHtml(orderNumber)}
+    </strong>
+
+    <p>
+      Your OneKhusa payment request has been created.
+    </p>
+
+    <div class="payment-instructions">
+
+      <strong>
+        OneKhusa Payment Number
+      </strong>
+
+      <p
+        style="
+          font-size:1.35rem;
+          font-weight:800;
+          letter-spacing:1px;
+          margin:10px 0;
+        "
+      >
+        ${escapeHtml(tan)}
+      </p>
+
+      <p>
+        Use this payment number to complete your
+        ${escapeHtml(
+          paymentMethod?.value || "mobile money"
+        )}
+        payment.
+      </p>
+
+      <p>
+        This payment request expires in approximately
+        ${escapeHtml(expiry)}
+        minutes.
+      </p>
+
+      <p>
+        Keep your order number:
+        <strong>
+          ${escapeHtml(orderNumber)}
+        </strong>
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
    PLACE ORDER
 ========================================================= */
 
@@ -1608,369 +1462,301 @@ const checkoutForm =
   );
 
 
-if (checkoutForm) {
+checkoutForm?.addEventListener(
+  "submit",
+  async function (event) {
 
-  checkoutForm.addEventListener(
-    "submit",
-    async function (event) {
-
-      event.preventDefault();
+    event.preventDefault();
 
 
-      if (!window.valarSupabase) {
+    if (!window.valarSupabase) {
 
-        alert(
-          "The VALAR store is not connected to Supabase."
-        );
+      alert(
+        "The VALAR store is not connected to Supabase."
+      );
 
-        return;
-      }
-
-
-      if (!cart.length) {
-
-        alert(
-          "Your cart is empty."
-        );
-
-        return;
-      }
+      return;
+    }
 
 
-      /* ===================================================
-         CHECK CURRENT STOCK
-      =================================================== */
+    if (!cart.length) {
 
-      const validCart =
-        cart.filter(item => {
+      alert(
+        "Your cart is empty."
+      );
 
-          const product =
-            products.find(
-              product =>
-                String(product.id) ===
-                String(item.id)
-            );
+      return;
+    }
 
 
-          return (
-            product &&
-            Number(product.stock) >=
-              Number(item.qty)
+    /* -----------------------------------------------------
+       STOCK CHECK
+    ----------------------------------------------------- */
+
+    const validCart =
+      cart.filter(item => {
+
+        const product =
+          products.find(
+            product =>
+              String(product.id) ===
+              String(item.id)
           );
+
+
+        return (
+          product &&
+          Number(product.stock) >=
+            Number(item.qty)
+        );
+
+      });
+
+
+    if (
+      validCart.length !==
+      cart.length
+    ) {
+
+      alert(
+        "One or more products in your cart are no longer available. Please review your cart."
+      );
+
+
+      cart =
+        validCart;
+
+
+      saveCart();
+
+      return;
+    }
+
+
+    /* -----------------------------------------------------
+       FORM DATA
+    ----------------------------------------------------- */
+
+    const formData =
+      new FormData(this);
+
+
+    const customerName =
+      String(
+        formData.get("name") || ""
+      ).trim();
+
+
+    const phone =
+      String(
+        formData.get("phone") || ""
+      ).trim();
+
+
+    const location =
+      String(
+        formData.get("location") || ""
+      ).trim();
+
+
+    const payment =
+      String(
+        formData.get("payment") || ""
+      ).trim();
+
+
+    const mobileNumber =
+      String(
+        formData.get(
+          "mobileMoneyPhone"
+        ) || ""
+      ).trim();
+
+
+    if (
+      !customerName ||
+      !phone ||
+      !location ||
+      !payment
+    ) {
+
+      alert(
+        "Please complete all checkout fields."
+      );
+
+      return;
+    }
+
+
+    /* -----------------------------------------------------
+       VISA
+    ----------------------------------------------------- */
+
+    if (
+      payment ===
+      "Visa Card"
+    ) {
+
+      alert(
+        "Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or Cash on delivery / pickup."
+      );
+
+      return;
+    }
+
+
+    /* -----------------------------------------------------
+       MOBILE MONEY NUMBER
+    ----------------------------------------------------- */
+
+    if (
+      (
+        payment === "Airtel Money" ||
+        payment === "Mpamba"
+      ) &&
+      !mobileNumber
+    ) {
+
+      alert(
+        "Please enter your mobile-money number."
+      );
+
+      return;
+    }
+
+
+    const total =
+      cartTotal();
+
+
+    if (
+      !Number.isFinite(total) ||
+      total <= 0
+    ) {
+
+      alert(
+        "Your order total is invalid."
+      );
+
+      return;
+    }
+
+
+    const submitButton =
+      this.querySelector(
+        'button[type="submit"]'
+      );
+
+
+    if (submitButton) {
+
+      submitButton.disabled =
+        true;
+
+      submitButton.textContent =
+        (
+          payment === "Airtel Money" ||
+          payment === "Mpamba"
+        )
+          ? "STARTING PAYMENT..."
+          : "PLACING ORDER...";
+
+    }
+
+
+    try {
+
+      /* ---------------------------------------------------
+         CREATE ORDER
+      --------------------------------------------------- */
+
+      const createdOrder =
+        await createValarOrder({
+
+          customerName:
+            customerName,
+
+          phone:
+            phone,
+
+          location:
+            location,
+
+          payment:
+            payment,
+
+          total:
+            total
 
         });
 
 
-      if (
-        validCart.length !==
-        cart.length
-      ) {
-
-        alert(
-          "One or more products in your cart are no longer available. Please review your cart."
-        );
+      const orderNumber =
+        createdOrder.order_number;
 
 
-        cart =
-          validCart;
-
-
-        saveCart();
-
-
-        return;
-      }
-
-
-      /* ===================================================
-         FORM DATA
-      =================================================== */
-
-      const formData =
-        new FormData(this);
-
-
-      const customerName =
-        String(
-          formData.get("name") || ""
-        ).trim();
-
-
-      const phone =
-        String(
-          formData.get("phone") || ""
-        ).trim();
-
-
-      const location =
-        String(
-          formData.get("location") || ""
-        ).trim();
-
-
-      const payment =
-        String(
-          formData.get("payment") || ""
-        ).trim();
-
-
-      const selectedMobileNumber =
-        String(
-          formData.get(
-            "mobileMoneyPhone"
-          ) || ""
-        ).trim();
-
-
-      /* ===================================================
-         BASIC VALIDATION
-      =================================================== */
+      /* ---------------------------------------------------
+         MOBILE MONEY
+      --------------------------------------------------- */
 
       if (
-        !customerName ||
-        !phone ||
-        !location ||
-        !payment
+        payment === "Airtel Money" ||
+        payment === "Mpamba"
       ) {
 
-        alert(
-          "Please complete all checkout fields."
-        );
-
-        return;
-      }
-
-
-      /* ===================================================
-         VISA NOT READY
-      =================================================== */
-
-      if (
-        payment ===
-        "Visa Card"
-      ) {
-
-        alert(
-          "Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or Cash on delivery / pickup."
-        );
-
-        return;
-      }
-
-
-      /* ===================================================
-         MOBILE MONEY NUMBER
-      =================================================== */
-
-      if (
-        (
-          payment ===
-            "Airtel Money" ||
-          payment ===
-            "Mpamba"
-        ) &&
-        !selectedMobileNumber
-      ) {
-
-        alert(
-          "Please enter your mobile-money number."
-        );
-
-        return;
-      }
-
-
-      /* ===================================================
-         TOTAL
-      =================================================== */
-
-      const total =
-        cartTotal();
-
-
-      if (
-        !Number.isFinite(total) ||
-        total <= 0
-      ) {
-
-        alert(
-          "Your order total is invalid."
-        );
-
-        return;
-      }
-
-
-      /* ===================================================
-         BUTTON
-      =================================================== */
-
-      const submitButton =
-        this.querySelector(
-          'button[type="submit"]'
+        showOrderResult(
+          orderNumber,
+          "Creating your secure OneKhusa payment request..."
         );
 
 
-      if (submitButton) {
+        try {
 
-        submitButton.disabled =
-          true;
-
-
-        submitButton.textContent =
-          (
-            payment ===
-              "Airtel Money" ||
-            payment ===
-              "Mpamba"
-          )
-            ? "STARTING PAYMENT..."
-            : "PLACING ORDER...";
-
-      }
+          const paymentResult =
+            await startOneKhusaPayment(
+              orderNumber
+            );
 
 
-      try {
-
-        /* =================================================
-           CREATE ORDER
-        ================================================= */
-
-        const createdOrder =
-          await createValarOrder({
-
-            customerName:
-              customerName,
-
-            phone:
-              phone,
-
-            location:
-              location,
-
-            payment:
-              payment,
-
-            total:
-              total
-
-          });
-
-
-        const orderNumber =
-          createdOrder.order_number;
-
-
-        /* =================================================
-           MOBILE MONEY
-        ================================================= */
-
-        if (
-          payment ===
-            "Airtel Money" ||
-          payment ===
-            "Mpamba"
-        ) {
-
-          showOrderResult(
-            orderNumber,
-            "Opening secure OneKhusa payment checkout..."
+          localStorage.setItem(
+            "valarPendingPaymentOrder",
+            orderNumber
           );
 
 
-          try {
-
-            const checkoutUrl =
-              await startOneKhusaPayment(
-                orderNumber
-              );
+          showOneKhusaPayment(
+            orderNumber,
+            paymentResult
+          );
 
 
-            /*
-              Save order number locally so
-              it can be recovered if the
-              customer returns to VALAR.
-            */
+          /*
+             We intentionally DO NOT clear the cart yet.
+             The order is still pending until OneKhusa
+             confirms successful payment.
+          */
 
-            localStorage.setItem(
-              "valarPendingPaymentOrder",
-              orderNumber
-            );
-
-
-            /*
-              Keep the cart until the payment
-              flow has started successfully.
-            */
-
-            window.location.href =
-              checkoutUrl;
-
-
-            return;
-
-          }
-
-          catch (paymentError) {
-
-            console.error(
-              "OneKhusa start error:",
-              paymentError
-            );
-
-
-            alert(
-              "Your order was created, but we could not start the OneKhusa payment. Please try again or contact VALAR with your order number: " +
-              orderNumber
-            );
-
-
-            showOrderResult(
-              orderNumber,
-              "Payment could not be started. Keep this order number and contact VALAR if necessary."
-            );
-
-
-            return;
-
-          }
+          return;
 
         }
 
+        catch (paymentError) {
 
-        /* =================================================
-           CASH ORDER
-        ================================================= */
-
-        if (
-          payment ===
-          "Cash on delivery / pickup"
-        ) {
-
-          showOrderResult(
-            orderNumber,
-            "Pay cash when your order is delivered or collected."
+          console.error(
+            "OneKhusa start error:",
+            paymentError
           );
 
 
-          cart = [];
-
-          saveCart();
-
-
-          this.reset();
-
-
-          updatePaymentInstructions();
-
-
-          closeCheckout();
-
-
           alert(
-            "Order " +
-            orderNumber +
-            " received. Please keep this number for reference."
+            "Your order was created, but we could not start the OneKhusa payment. Please keep your order number: " +
+            orderNumber
+          );
+
+
+          showOrderResult(
+            orderNumber,
+            "Payment could not be started. Keep this order number and contact VALAR."
           );
 
 
@@ -1978,42 +1764,79 @@ if (checkoutForm) {
 
         }
 
-
       }
 
-      catch (error) {
 
-        console.error(
-          "VALAR checkout error:",
-          error
+      /* ---------------------------------------------------
+         CASH
+      --------------------------------------------------- */
+
+      if (
+        payment ===
+        "Cash on delivery / pickup"
+      ) {
+
+        showOrderResult(
+          orderNumber,
+          "Pay cash when your order is delivered or collected."
         );
+
+
+        cart = [];
+
+        saveCart();
+
+
+        this.reset();
+
+        updatePaymentInstructions();
+
+        closeCheckout();
 
 
         alert(
-          "We could not place your order. Please try again."
+          "Order " +
+          orderNumber +
+          " received. Please keep this number for reference."
         );
 
-      }
 
-      finally {
-
-        if (submitButton) {
-
-          submitButton.disabled =
-            false;
-
-
-          submitButton.textContent =
-            "PLACE ORDER";
-
-        }
+        return;
 
       }
 
     }
-  );
 
-}
+    catch (error) {
+
+      console.error(
+        "VALAR checkout error:",
+        error
+      );
+
+
+      alert(
+        "We could not place your order. Please try again."
+      );
+
+    }
+
+    finally {
+
+      if (submitButton) {
+
+        submitButton.disabled =
+          false;
+
+        submitButton.textContent =
+          "PLACE ORDER";
+
+      }
+
+    }
+
+  }
+);
 
 
 /* =========================================================
