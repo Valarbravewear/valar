@@ -1,5 +1,3 @@
-VALAR — Brave & Wear
-
 <p align="center">
   <img src="valar-logo-dark.jpg" alt="VALAR Logo" width="220">
 </p><p align="center">
@@ -10,7 +8,7 @@ VALAR — Brave & Wear
   <a href="https://valarbravewear.github.io/valar/">
     <strong>Visit VALAR Website →</strong>
   </a>
-</p>---
+</p>
 
 About VALAR
 
