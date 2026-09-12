@@ -426,6 +426,97 @@
     <h2 id="checkoutTitle">
       Complete your order
     </h2>
+    <!-- =========================================================
+     STOCK REQUEST MODAL
+========================================================= -->
+
+<div class="modal-backdrop" id="stockRequestBackdrop">
+
+  <div class="modal" role="dialog" aria-modal="true">
+
+    <button
+      id="closeStockRequest"
+      class="modal-close"
+      type="button"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+    <p class="eyebrow">VALAR STOCK REQUEST</p>
+
+    <h2>Need more stock?</h2>
+
+    <p id="stockRequestMessage">
+      This product is currently limited.
+    </p>
+
+    <form id="stockRequestForm">
+
+      <input
+        type="hidden"
+        id="stockRequestProductId"
+      >
+
+      <input
+        type="hidden"
+        id="stockRequestRequestedQty"
+      >
+
+      <input
+        type="hidden"
+        id="stockRequestExtraQty"
+      >
+
+      <label>
+        Full name
+
+        <input
+          required
+          type="text"
+          id="stockRequestName"
+          placeholder="Your name"
+        >
+      </label>
+
+      <label>
+        Phone number
+
+        <input
+          required
+          type="tel"
+          id="stockRequestPhone"
+          placeholder="Your phone number"
+        >
+      </label>
+
+      <div class="checkout-summary">
+
+        <span>Additional items requested</span>
+
+        <strong id="stockRequestExtraDisplay">
+          0
+        </strong>
+
+      </div>
+
+      <button
+        class="button button-dark full"
+        type="submit"
+      >
+        SEND REQUEST
+      </button>
+
+    </form>
+
+    <div
+      id="stockRequestResult"
+      class="order-result"
+    ></div>
+
+  </div>
+
+</div>
 
 
     <!-- =====================================================
@@ -480,7 +571,7 @@
           required
           name="location"
           rows="2"
-          placeholder="Area / town / delivery details"
+          placeholder="Area / description area"
         ></textarea>
 
       </label>

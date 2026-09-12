@@ -49,12 +49,65 @@ function escapeHtml(value) {
 
 
 /* =========================================================
+   PRODUCT IMAGE HTML
+========================================================= */
+
+function productImage(product) {
+
+  const imageUrl =
+    String(product.image_url || "").trim();
+
+
+  /* =======================================================
+     ACTUAL PRODUCT IMAGE
+  ======================================================= */
+
+  if (imageUrl) {
+
+    return `
+      <img
+        src="${escapeHtml(imageUrl)}"
+        alt="${escapeHtml(product.name || "VALAR product")}"
+        loading="lazy"
+        onerror="this.onerror=null;this.style.display='none';this.parentElement.classList.add('image-error');"
+      >
+    `;
+
+  }
+
+
+  /* =======================================================
+     FALLBACK
+  ======================================================= */
+
+  return `
+    <div class="placeholder">
+
+      ${escapeHtml(
+        (product.name || "VALAR")
+          .split(" ")[0]
+      )}
+
+    </div>
+  `;
+
+}
+
+
+/* =========================================================
    LOAD PRODUCTS FROM SUPABASE
 ========================================================= */
 
 async function loadProducts() {
 
-  const grid = document.getElementById("productGrid");
+  const grid =
+    document.getElementById("productGrid");
+
+
+  if (!grid) {
+    return;
+  }
+
 
   if (!window.valarSupabase) {
 
@@ -62,11 +115,13 @@ async function loadProducts() {
       "VALAR Supabase client is not configured."
     );
 
+
     grid.innerHTML = `
       <div class="loading">
         Store connection is not configured.
       </div>
     `;
+
 
     return;
   }
@@ -84,13 +139,17 @@ async function loadProducts() {
     const {
       data,
       error
-    } = await window.valarSupabase
-      .from("products")
-      .select("*")
-      .eq("active", true)
-      .order("created_at", {
-        ascending: false
-      });
+    } =
+      await window.valarSupabase
+        .from("products")
+        .select("*")
+        .eq("active", true)
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
 
 
     if (error) {
@@ -100,36 +159,46 @@ async function loadProducts() {
         error
       );
 
+
       grid.innerHTML = `
         <div class="loading">
           Unable to load the collection right now.
         </div>
       `;
 
+
       return;
     }
 
 
-    products = Array.isArray(data)
-      ? data
-      : [];
+    products =
+      Array.isArray(data)
+        ? data
+        : [];
 
 
     /*
-      Remove products from the cart that
+      Remove products from cart that
       are no longer active/available.
     */
 
-    cart = cart.filter(item => {
+    cart =
+      cart.filter(item => {
 
-      const product = products.find(
-        product =>
-          String(product.id) === String(item.id)
-      );
+        const product =
+          products.find(
+            product =>
+              String(product.id) ===
+              String(item.id)
+          );
 
-      return product && Number(product.stock) > 0;
 
-    });
+        return (
+          product &&
+          Number(product.stock) > 0
+        );
+
+      });
 
 
     saveCart(false);
@@ -149,6 +218,7 @@ async function loadProducts() {
       "VALAR store error:",
       error
     );
+
 
     grid.innerHTML = `
       <div class="loading">
@@ -171,53 +241,54 @@ function renderFilters() {
     document.getElementById("filters");
 
 
-  if (!filters) return;
+  if (!filters) {
+    return;
+  }
 
 
   const categories = [
     "All",
     ...new Set(
       products
-        .map(product => product.category)
+        .map(
+          product =>
+            product.category
+        )
         .filter(Boolean)
     )
   ];
 
-
-  /*
-    If there are no products, don't show filters.
-  */
 
   if (!products.length) {
 
     filters.innerHTML = "";
 
     return;
-
   }
 
 
-  filters.innerHTML = categories
-    .map(category => {
+  filters.innerHTML =
+    categories
+      .map(category => {
 
-      const active =
-        category === selectedCategory
-          ? "active"
-          : "";
+        const active =
+          category === selectedCategory
+            ? "active"
+            : "";
 
 
-      return `
-        <button
-          class="filter ${active}"
-          type="button"
-          data-category="${escapeHtml(category)}"
-        >
-          ${escapeHtml(category)}
-        </button>
-      `;
+        return `
+          <button
+            class="filter ${active}"
+            type="button"
+            data-category="${escapeHtml(category)}"
+          >
+            ${escapeHtml(category)}
+          </button>
+        `;
 
-    })
-    .join("");
+      })
+      .join("");
 
 
   document
@@ -230,6 +301,7 @@ function renderFilters() {
 
           selectedCategory =
             this.dataset.category;
+
 
           renderFilters();
 
@@ -250,10 +322,14 @@ function renderFilters() {
 function renderProducts() {
 
   const grid =
-    document.getElementById("productGrid");
+    document.getElementById(
+      "productGrid"
+    );
 
 
-  if (!grid) return;
+  if (!grid) {
+    return;
+  }
 
 
   const list =
@@ -274,85 +350,79 @@ function renderProducts() {
       </div>
     `;
 
-    return;
 
+    return;
   }
 
 
-  grid.innerHTML = list
-    .map(product => {
+  grid.innerHTML =
+    list
+      .map(product => {
+
+        const image =
+          productImage(product);
 
 
-      const image =
-        product.image_url
-          ? `
-            <img
-              src="${escapeHtml(product.image_url)}"
-              alt="${escapeHtml(product.name)}"
-              loading="lazy"
-            >
-          `
-          : `
-            <div class="placeholder">
-              ${escapeHtml(
-                (product.name || "VALAR")
-                  .split(" ")[0]
-              )}
-            </div>
-          `;
+        const soldOut =
+          Number(product.stock) <= 0;
 
 
-      const soldOut =
-        Number(product.stock) <= 0;
+        return `
+          <article
+            class="product-card"
+            data-product-id="${escapeHtml(product.id)}"
+          >
 
+            <div class="product-photo">
 
-      return `
-        <article
-          class="product-card"
-          data-product-id="${escapeHtml(product.id)}"
-        >
-
-          <div class="product-photo">
-            ${image}
-          </div>
-
-
-          <div class="product-info">
-
-            <h3>
-              ${escapeHtml(product.name)}
-            </h3>
-
-
-            <div class="product-meta">
-
-              <span>
-                ${escapeHtml(product.category || "")}
-              </span>
-
-              <strong class="price">
-                ${money(product.price)}
-              </strong>
+              ${image}
 
             </div>
 
 
-            <button
-              class="add"
-              type="button"
-              ${soldOut ? "disabled" : ""}
-              onclick="addToCart('${escapeHtml(product.id)}')"
-            >
-              ${soldOut ? "SOLD OUT" : "ADD TO CART"}
-            </button>
+            <div class="product-info">
 
-          </div>
+              <h3>
+                ${escapeHtml(product.name)}
+              </h3>
 
-        </article>
-      `;
 
-    })
-    .join("");
+              <div class="product-meta">
+
+                <span>
+                  ${escapeHtml(
+                    product.category || ""
+                  )}
+                </span>
+
+
+                <strong class="price">
+                  ${money(product.price)}
+                </strong>
+
+              </div>
+
+
+              <button
+                class="add"
+                type="button"
+                ${soldOut ? "disabled" : ""}
+                onclick="addToCart('${escapeHtml(product.id)}')"
+              >
+                ${
+                  soldOut
+                    ? "SOLD OUT"
+                    : "ADD TO CART"
+                }
+              </button>
+
+            </div>
+
+          </article>
+        `;
+
+      })
+      .join("");
 
 }
 
@@ -366,26 +436,32 @@ function addToCart(id) {
   const product =
     products.find(
       item =>
-        String(item.id) === String(id)
+        String(item.id) ===
+        String(id)
     );
 
 
-  if (!product) return;
+  if (!product) {
+    return;
+  }
 
 
   if (Number(product.stock) <= 0) {
 
-    alert("This product is currently sold out.");
+    alert(
+      "This product is currently sold out."
+    );
+
 
     return;
-
   }
 
 
   const existing =
     cart.find(
       item =>
-        String(item.id) === String(id)
+        String(item.id) ===
+        String(id)
     );
 
 
@@ -398,14 +474,16 @@ function addToCart(id) {
 
       existing.qty++;
 
-    } else {
+    }
+
+    else {
 
       alert(
         "You cannot add more than the available stock."
       );
 
-      return;
 
+      return;
     }
 
   }
@@ -414,9 +492,11 @@ function addToCart(id) {
 
     cart.push({
 
-      id: product.id,
+      id:
+        product.id,
 
-      qty: 1,
+      qty:
+        1,
 
       size:
         Array.isArray(product.sizes)
@@ -467,10 +547,12 @@ function saveCart(render = true) {
 
 function removeFromCart(id) {
 
-  cart = cart.filter(
-    item =>
-      String(item.id) !== String(id)
-  );
+  cart =
+    cart.filter(
+      item =>
+        String(item.id) !==
+        String(id)
+    );
 
 
   saveCart();
@@ -487,18 +569,22 @@ function changeQty(id, amount) {
   const item =
     cart.find(
       cartItem =>
-        String(cartItem.id) === String(id)
+        String(cartItem.id) ===
+        String(id)
     );
 
 
   const product =
     products.find(
       product =>
-        String(product.id) === String(id)
+        String(product.id) ===
+        String(id)
     );
 
 
-  if (!item || !product) return;
+  if (!item || !product) {
+    return;
+  }
 
 
   const newQuantity =
@@ -510,7 +596,6 @@ function changeQty(id, amount) {
     removeFromCart(id);
 
     return;
-
   }
 
 
@@ -523,12 +608,14 @@ function changeQty(id, amount) {
       "You have reached the available stock."
     );
 
-    return;
 
+    return;
   }
 
 
-  item.qty = newQuantity;
+  item.qty =
+    newQuantity;
+
 
   saveCart();
 
@@ -552,7 +639,9 @@ function cartTotal() {
         );
 
 
-      if (!product) return total;
+      if (!product) {
+        return total;
+      }
 
 
       return (
@@ -575,40 +664,56 @@ function cartTotal() {
 function renderCart() {
 
   const cartCount =
-    document.getElementById("cartCount");
+    document.getElementById(
+      "cartCount"
+    );
+
 
   const cartTotalElement =
-    document.getElementById("cartTotal");
+    document.getElementById(
+      "cartTotal"
+    );
+
 
   const checkoutTotal =
-    document.getElementById("checkoutTotal");
+    document.getElementById(
+      "checkoutTotal"
+    );
+
 
   const cartItems =
-    document.getElementById("cartItems");
+    document.getElementById(
+      "cartItems"
+    );
 
 
-  if (!cartCount ||
-      !cartTotalElement ||
-      !checkoutTotal ||
-      !cartItems) {
+  if (
+    !cartCount ||
+    !cartTotalElement ||
+    !checkoutTotal ||
+    !cartItems
+  ) {
 
     return;
-
   }
 
 
   const count =
     cart.reduce(
       (total, item) =>
-        total + Number(item.qty || 0),
+        total +
+        Number(item.qty || 0),
       0
     );
 
 
-  cartCount.textContent = count;
+  cartCount.textContent =
+    count;
+
 
   cartTotalElement.textContent =
     money(cartTotal());
+
 
   checkoutTotal.textContent =
     money(cartTotal());
@@ -622,15 +727,14 @@ function renderCart() {
       </div>
     `;
 
-    return;
 
+    return;
   }
 
 
   cartItems.innerHTML =
     cart
       .map(item => {
-
 
         const product =
           products.find(
@@ -640,11 +744,9 @@ function renderCart() {
           );
 
 
-        /*
-          Product was deleted or deactivated.
-        */
-
-        if (!product) return "";
+        if (!product) {
+          return "";
+        }
 
 
         const photo =
@@ -653,6 +755,7 @@ function renderCart() {
               <img
                 src="${escapeHtml(product.image_url)}"
                 alt="${escapeHtml(product.name)}"
+                loading="lazy"
               >
             `
             : escapeHtml(
@@ -664,9 +767,10 @@ function renderCart() {
         return `
           <div class="cart-item">
 
-
             <div class="mini-photo">
+
               ${photo}
+
             </div>
 
 
@@ -724,7 +828,6 @@ function renderCart() {
 
             </div>
 
-
           </div>
         `;
 
@@ -741,17 +844,25 @@ function renderCart() {
 function openCart() {
 
   const drawer =
-    document.getElementById("cartDrawer");
+    document.getElementById(
+      "cartDrawer"
+    );
+
 
   const backdrop =
-    document.getElementById("drawerBackdrop");
+    document.getElementById(
+      "drawerBackdrop"
+    );
 
 
-  if (drawer)
+  if (drawer) {
     drawer.classList.add("show");
+  }
 
-  if (backdrop)
+
+  if (backdrop) {
     backdrop.classList.add("show");
+  }
 
 }
 
@@ -763,17 +874,25 @@ function openCart() {
 function closeCart() {
 
   const drawer =
-    document.getElementById("cartDrawer");
+    document.getElementById(
+      "cartDrawer"
+    );
+
 
   const backdrop =
-    document.getElementById("drawerBackdrop");
+    document.getElementById(
+      "drawerBackdrop"
+    );
 
 
-  if (drawer)
+  if (drawer) {
     drawer.classList.remove("show");
+  }
 
-  if (backdrop)
+
+  if (backdrop) {
     backdrop.classList.remove("show");
+  }
 
 }
 
@@ -783,13 +902,21 @@ function closeCart() {
 ========================================================= */
 
 const openCartButton =
-  document.getElementById("openCart");
+  document.getElementById(
+    "openCart"
+  );
+
 
 const closeCartButton =
-  document.getElementById("closeCart");
+  document.getElementById(
+    "closeCart"
+  );
+
 
 const drawerBackdrop =
-  document.getElementById("drawerBackdrop");
+  document.getElementById(
+    "drawerBackdrop"
+  );
 
 
 if (openCartButton) {
@@ -836,30 +963,74 @@ const closeCheckoutButton =
   document.getElementById("closeCheckout");
 
 
+/* =========================================================
+   OPEN CHECKOUT FORM
+========================================================= */
+
+function openCheckout() {
+
+  if (!cart.length) {
+
+    alert("Your cart is empty.");
+
+    return;
+  }
+
+
+  /* Update checkout total */
+
+  const checkoutTotal =
+    document.getElementById("checkoutTotal");
+
+  if (checkoutTotal) {
+
+    checkoutTotal.textContent =
+      money(cartTotal());
+
+  }
+
+
+  /* Close cart drawer */
+
+  closeCart();
+
+
+  /* Open checkout form */
+
+  if (checkoutBackdrop) {
+
+    checkoutBackdrop.classList.add("show");
+
+  }
+
+}
+
+
+/* =========================================================
+   CHECKOUT BUTTON
+========================================================= */
+
 if (checkoutButton) {
 
   checkoutButton.addEventListener(
     "click",
-    function () {
-
-
-      if (!cart.length) {
-
-        alert(
-          "Your cart is empty."
-        );
-
-        return;
-
-      }
-
-
-      checkoutBackdrop.classList.add(
-        "show"
-      );
-
-    }
+    openCheckout
   );
+
+}
+
+
+/* =========================================================
+   CLOSE CHECKOUT
+========================================================= */
+
+function closeCheckout() {
+
+  if (checkoutBackdrop) {
+
+    checkoutBackdrop.classList.remove("show");
+
+  }
 
 }
 
@@ -868,20 +1039,14 @@ if (closeCheckoutButton) {
 
   closeCheckoutButton.addEventListener(
     "click",
-    function () {
-
-      checkoutBackdrop.classList.remove(
-        "show"
-      );
-
-    }
+    closeCheckout
   );
 
 }
 
 
 /* =========================================================
-   CLOSE CHECKOUT WHEN CLICKING BACKDROP
+   CLOSE WHEN CLICKING OUTSIDE FORM
 ========================================================= */
 
 if (checkoutBackdrop) {
@@ -891,13 +1056,10 @@ if (checkoutBackdrop) {
     function (event) {
 
       if (
-        event.target ===
-        checkoutBackdrop
+        event.target === checkoutBackdrop
       ) {
 
-        checkoutBackdrop.classList.remove(
-          "show"
-        );
+        closeCheckout();
 
       }
 
@@ -912,7 +1074,9 @@ if (checkoutBackdrop) {
 ========================================================= */
 
 const checkoutForm =
-  document.getElementById("checkoutForm");
+  document.getElementById(
+    "checkoutForm"
+  );
 
 
 if (checkoutForm) {
@@ -930,8 +1094,8 @@ if (checkoutForm) {
           "The VALAR store is not connected to Supabase."
         );
 
-        return;
 
+        return;
       }
 
 
@@ -941,14 +1105,10 @@ if (checkoutForm) {
           "Your cart is empty."
         );
 
-        return;
 
+        return;
       }
 
-
-      /*
-        Make sure every cart item still exists.
-      */
 
       const validCart =
         cart.filter(item => {
@@ -959,6 +1119,7 @@ if (checkoutForm) {
                 String(product.id) ===
                 String(item.id)
             );
+
 
           return (
             product &&
@@ -978,12 +1139,15 @@ if (checkoutForm) {
           "One or more products in your cart are no longer available. Please review your cart."
         );
 
-        cart = validCart;
+
+        cart =
+          validCart;
+
 
         saveCart();
 
-        return;
 
+        return;
       }
 
 
@@ -1026,8 +1190,8 @@ if (checkoutForm) {
           "Please complete all checkout fields."
         );
 
-        return;
 
+        return;
       }
 
 
@@ -1075,11 +1239,6 @@ if (checkoutForm) {
       };
 
 
-      /*
-        Disable submit button
-        while processing.
-      */
-
       const submitButton =
         this.querySelector(
           'button[type="submit"]'
@@ -1088,7 +1247,9 @@ if (checkoutForm) {
 
       if (submitButton) {
 
-        submitButton.disabled = true;
+        submitButton.disabled =
+          true;
+
 
         submitButton.textContent =
           "PLACING ORDER...";
@@ -1097,11 +1258,6 @@ if (checkoutForm) {
 
 
       try {
-
-
-        /* =================================================
-           CREATE ORDER
-        ================================================= */
 
         const {
           data: createdOrder,
@@ -1121,16 +1277,13 @@ if (checkoutForm) {
             orderError
           );
 
+
           throw new Error(
             "ORDER_CREATE_FAILED"
           );
 
         }
 
-
-        /* =================================================
-           CREATE ORDER ITEMS
-        ================================================= */
 
         const orderItems =
           cart.map(item => {
@@ -1190,10 +1343,6 @@ if (checkoutForm) {
             itemError
           );
 
-          /*
-            Remove the order if its items
-            could not be created.
-          */
 
           await window.valarSupabase
             .from("orders")
@@ -1210,10 +1359,6 @@ if (checkoutForm) {
 
         }
 
-
-        /* =================================================
-           SUCCESS
-        ================================================= */
 
         const orderResult =
           document.getElementById(
@@ -1236,33 +1381,15 @@ if (checkoutForm) {
         }
 
 
-        /*
-          Clear cart.
-        */
-
         cart = [];
 
         saveCart();
 
 
-        /*
-          Reset form.
-        */
-
         this.reset();
 
 
-        /*
-          Close cart drawer.
-        */
-
         closeCart();
-
-
-        /*
-          Keep checkout modal open so
-          customer can see confirmation.
-        */
 
       }
 
@@ -1284,7 +1411,9 @@ if (checkoutForm) {
 
         if (submitButton) {
 
-          submitButton.disabled = false;
+          submitButton.disabled =
+            false;
+
 
           submitButton.textContent =
             "PLACE ORDER";
@@ -1304,7 +1433,9 @@ if (checkoutForm) {
 ========================================================= */
 
 const yearElement =
-  document.getElementById("year");
+  document.getElementById(
+    "year"
+  );
 
 
 if (yearElement) {
