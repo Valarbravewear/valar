@@ -1,104 +1,1322 @@
+/* =========================================================
+   VALAR CUSTOMER STORE
+   SUPABASE VERSION
+========================================================= */
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
 let products = [];
-let cart = JSON.parse(localStorage.getItem("valarCart") || "[]");
+
+let cart = JSON.parse(
+  localStorage.getItem("valarCart") || "[]"
+);
+
 let selectedCategory = "All";
 
-const fallbackProducts = [
- {id:"demo-1",name:"VALAR Signature Tee",category:"T-Shirts",description:"VALAR signature streetwear tee.",price:18500,stock:10,image_url:"",sizes:["S","M","L","XL"],colors:["Black"],active:true},
- {id:"demo-2",name:"Brave & Wear Tee",category:"T-Shirts",description:"Bold everyday VALAR tee.",price:18000,stock:10,image_url:"",sizes:["S","M","L","XL"],colors:["White"],active:true},
- {id:"demo-3",name:"VALAR Essential Hoodie",category:"Hoodies",description:"Heavy everyday hoodie.",price:35000,stock:5,image_url:"",sizes:["M","L","XL"],colors:["Black"],active:true},
- {id:"demo-4",name:"VALAR Street Cap",category:"Caps",description:"Classic VALAR cap.",price:15000,stock:8,image_url:"",sizes:["One size"],colors:["Black"],active:true}
-];
 
-const money = n => "MWK " + Number(n || 0).toLocaleString("en-US");
+/* =========================================================
+   MONEY FORMAT
+========================================================= */
 
-async function loadProducts(){
-  if(window.valarSupabase){
-    const {data,error}=await window.valarSupabase.from("products").select("*").eq("active",true).order("created_at",{ascending:false});
-    if(!error && data && data.length){ products=data; }
-    else { products=fallbackProducts; }
-  } else { products=fallbackProducts; }
-  renderFilters(); renderProducts(); renderCart();
+function money(value) {
+
+  return "MWK " + Number(value || 0).toLocaleString("en-US");
+
 }
 
-function renderFilters(){
-  const cats=["All",...new Set(products.map(p=>p.category))];
-  document.getElementById("filters").innerHTML=cats.map(c=>`<button class="filter ${c===selectedCategory?"active":""}" data-category="${c}">${c}</button>`).join("");
-  document.querySelectorAll(".filter").forEach(btn=>btn.onclick=()=>{
-    selectedCategory=btn.dataset.category; renderFilters(); renderProducts();
-  });
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    character => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[character])
+  );
+
 }
 
-function renderProducts(){
-  const list=selectedCategory==="All"?products:products.filter(p=>p.category===selectedCategory);
-  const grid=document.getElementById("productGrid");
-  if(!list.length){grid.innerHTML='<div class="loading">No products available right now.</div>';return;}
-  grid.innerHTML=list.map(p=>`
-    <article class="product-card">
-      <div class="product-photo">${p.image_url?`<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}">`:`<div class="placeholder">${escapeHtml((p.name||"VALAR").split(" ")[0])}</div>`}</div>
-      <div class="product-info">
-        <h3>${escapeHtml(p.name)}</h3>
-        <div class="product-meta"><span>${escapeHtml(p.category)}</span><strong class="price">${money(p.price)}</strong></div>
-        <button class="add" ${Number(p.stock)<=0?"disabled":""} onclick="addToCart('${p.id}')">${Number(p.stock)<=0?"SOLD OUT":"ADD TO CART"}</button>
+
+/* =========================================================
+   LOAD PRODUCTS FROM SUPABASE
+========================================================= */
+
+async function loadProducts() {
+
+  const grid = document.getElementById("productGrid");
+
+  if (!window.valarSupabase) {
+
+    console.error(
+      "VALAR Supabase client is not configured."
+    );
+
+    grid.innerHTML = `
+      <div class="loading">
+        Store connection is not configured.
       </div>
-    </article>`).join("");
+    `;
+
+    return;
+  }
+
+
+  grid.innerHTML = `
+    <div class="loading">
+      Loading the collection…
+    </div>
+  `;
+
+
+  try {
+
+    const {
+      data,
+      error
+    } = await window.valarSupabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("created_at", {
+        ascending: false
+      });
+
+
+    if (error) {
+
+      console.error(
+        "Supabase products error:",
+        error
+      );
+
+      grid.innerHTML = `
+        <div class="loading">
+          Unable to load the collection right now.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    products = Array.isArray(data)
+      ? data
+      : [];
+
+
+    /*
+      Remove products from the cart that
+      are no longer active/available.
+    */
+
+    cart = cart.filter(item => {
+
+      const product = products.find(
+        product =>
+          String(product.id) === String(item.id)
+      );
+
+      return product && Number(product.stock) > 0;
+
+    });
+
+
+    saveCart(false);
+
+
+    renderFilters();
+
+    renderProducts();
+
+    renderCart();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "VALAR store error:",
+      error
+    );
+
+    grid.innerHTML = `
+      <div class="loading">
+        Unable to connect to the VALAR store.
+      </div>
+    `;
+
+  }
+
 }
 
-function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 
-function addToCart(id){
-  const p=products.find(x=>String(x.id)===String(id)); if(!p)return;
-  const item=cart.find(x=>String(x.id)===String(id));
-  if(item){ if(item.qty < Number(p.stock)) item.qty++; }
-  else cart.push({id:p.id,qty:1,size:(p.sizes||[])[0]||"",color:(p.colors||[])[0]||""});
-  saveCart(); openCart();
+/* =========================================================
+   PRODUCT FILTERS
+========================================================= */
+
+function renderFilters() {
+
+  const filters =
+    document.getElementById("filters");
+
+
+  if (!filters) return;
+
+
+  const categories = [
+    "All",
+    ...new Set(
+      products
+        .map(product => product.category)
+        .filter(Boolean)
+    )
+  ];
+
+
+  /*
+    If there are no products, don't show filters.
+  */
+
+  if (!products.length) {
+
+    filters.innerHTML = "";
+
+    return;
+
+  }
+
+
+  filters.innerHTML = categories
+    .map(category => {
+
+      const active =
+        category === selectedCategory
+          ? "active"
+          : "";
+
+
+      return `
+        <button
+          class="filter ${active}"
+          type="button"
+          data-category="${escapeHtml(category)}"
+        >
+          ${escapeHtml(category)}
+        </button>
+      `;
+
+    })
+    .join("");
+
+
+  document
+    .querySelectorAll(".filter")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          selectedCategory =
+            this.dataset.category;
+
+          renderFilters();
+
+          renderProducts();
+
+        }
+      );
+
+    });
+
 }
 
-function saveCart(){localStorage.setItem("valarCart",JSON.stringify(cart));renderCart();}
-function removeFromCart(id){cart=cart.filter(x=>String(x.id)!==String(id));saveCart();}
-function changeQty(id,d){
-  const item=cart.find(x=>String(x.id)===String(id)); const p=products.find(x=>String(x.id)===String(id)); if(!item||!p)return;
-  item.qty+=d; if(item.qty<=0)removeFromCart(id); else if(item.qty<=Number(p.stock))saveCart();
+
+/* =========================================================
+   RENDER PRODUCTS
+========================================================= */
+
+function renderProducts() {
+
+  const grid =
+    document.getElementById("productGrid");
+
+
+  if (!grid) return;
+
+
+  const list =
+    selectedCategory === "All"
+      ? products
+      : products.filter(
+          product =>
+            product.category ===
+            selectedCategory
+        );
+
+
+  if (!list.length) {
+
+    grid.innerHTML = `
+      <div class="loading">
+        No products available right now.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  grid.innerHTML = list
+    .map(product => {
+
+
+      const image =
+        product.image_url
+          ? `
+            <img
+              src="${escapeHtml(product.image_url)}"
+              alt="${escapeHtml(product.name)}"
+              loading="lazy"
+            >
+          `
+          : `
+            <div class="placeholder">
+              ${escapeHtml(
+                (product.name || "VALAR")
+                  .split(" ")[0]
+              )}
+            </div>
+          `;
+
+
+      const soldOut =
+        Number(product.stock) <= 0;
+
+
+      return `
+        <article
+          class="product-card"
+          data-product-id="${escapeHtml(product.id)}"
+        >
+
+          <div class="product-photo">
+            ${image}
+          </div>
+
+
+          <div class="product-info">
+
+            <h3>
+              ${escapeHtml(product.name)}
+            </h3>
+
+
+            <div class="product-meta">
+
+              <span>
+                ${escapeHtml(product.category || "")}
+              </span>
+
+              <strong class="price">
+                ${money(product.price)}
+              </strong>
+
+            </div>
+
+
+            <button
+              class="add"
+              type="button"
+              ${soldOut ? "disabled" : ""}
+              onclick="addToCart('${escapeHtml(product.id)}')"
+            >
+              ${soldOut ? "SOLD OUT" : "ADD TO CART"}
+            </button>
+
+          </div>
+
+        </article>
+      `;
+
+    })
+    .join("");
+
 }
 
-function cartTotal(){return cart.reduce((sum,x)=>{const p=products.find(p=>String(p.id)===String(x.id));return sum+(p?Number(p.price)*x.qty:0)},0);}
 
-function renderCart(){
-  const count=cart.reduce((s,x)=>s+x.qty,0); document.getElementById("cartCount").textContent=count;
-  document.getElementById("cartTotal").textContent=money(cartTotal());document.getElementById("checkoutTotal").textContent=money(cartTotal());
-  const wrap=document.getElementById("cartItems");
-  if(!cart.length){wrap.innerHTML='<div class="empty">Your cart is empty.</div>';return;}
-  wrap.innerHTML=cart.map(x=>{const p=products.find(p=>String(p.id)===String(x.id));if(!p)return "";
-    return `<div class="cart-item"><div class="mini-photo">${p.image_url?`<img src="${escapeHtml(p.image_url)}" alt="">`:escapeHtml((p.name||"V").slice(0,1))}</div>
-    <div><h4>${escapeHtml(p.name)}</h4><small>${money(p.price)} × ${x.qty}</small><br><button class="remove" onclick="removeFromCart('${p.id}')">Remove</button></div>
-    <div class="qty"><button onclick="changeQty('${p.id}',-1)">−</button> <strong>${x.qty}</strong> <button onclick="changeQty('${p.id}',1)">+</button></div></div>`;
-  }).join("");
+/* =========================================================
+   ADD TO CART
+========================================================= */
+
+function addToCart(id) {
+
+  const product =
+    products.find(
+      item =>
+        String(item.id) === String(id)
+    );
+
+
+  if (!product) return;
+
+
+  if (Number(product.stock) <= 0) {
+
+    alert("This product is currently sold out.");
+
+    return;
+
+  }
+
+
+  const existing =
+    cart.find(
+      item =>
+        String(item.id) === String(id)
+    );
+
+
+  if (existing) {
+
+    if (
+      existing.qty <
+      Number(product.stock)
+    ) {
+
+      existing.qty++;
+
+    } else {
+
+      alert(
+        "You cannot add more than the available stock."
+      );
+
+      return;
+
+    }
+
+  }
+
+  else {
+
+    cart.push({
+
+      id: product.id,
+
+      qty: 1,
+
+      size:
+        Array.isArray(product.sizes)
+          ? product.sizes[0] || ""
+          : "",
+
+      color:
+        Array.isArray(product.colors)
+          ? product.colors[0] || ""
+          : ""
+
+    });
+
+  }
+
+
+  saveCart();
+
+  openCart();
+
 }
 
-function openCart(){document.getElementById("cartDrawer").classList.add("show");document.getElementById("drawerBackdrop").classList.add("show");}
-function closeCart(){document.getElementById("cartDrawer").classList.remove("show");document.getElementById("drawerBackdrop").classList.remove("show");}
-document.getElementById("openCart").onclick=openCart;document.getElementById("closeCart").onclick=closeCart;document.getElementById("drawerBackdrop").onclick=closeCart;
 
-document.getElementById("checkoutButton").onclick=()=>{
-  if(!cart.length){alert("Your cart is empty.");return;}
-  document.getElementById("checkoutBackdrop").classList.add("show");
-};
-document.getElementById("closeCheckout").onclick=()=>document.getElementById("checkoutBackdrop").classList.remove("show");
+/* =========================================================
+   SAVE CART
+========================================================= */
 
-document.getElementById("checkoutForm").onsubmit=async e=>{
-  e.preventDefault();
-  if(!window.valarSupabase){alert("Connect the VALAR Supabase project in config.js first.");return;}
-  const data=new FormData(e.target);
-  const orderNumber="VALAR-"+Date.now().toString().slice(-8);
-  const total=cartTotal();
-  const order={order_number:orderNumber,customer_name:data.get("name"),phone:data.get("phone"),delivery_location:data.get("location"),payment_method:data.get("payment"),payment_status:data.get("payment")==="Cash on delivery / pickup"?"cash_pending":"pending",total};
-  const {data:created,error}=await window.valarSupabase.from("orders").insert(order).select().single();
-  if(error){alert("We could not place the order. Please try again.");console.error(error);return;}
-  const rows=cart.map(x=>{const p=products.find(p=>String(p.id)===String(x.id));return {order_id:created.id,product_id:p.id,product_name:p.name,quantity:x.qty,unit_price:p.price,size:x.size||"",color:x.color||"",line_total:Number(p.price)*x.qty};});
-  const {error:itemError}=await window.valarSupabase.from("order_items").insert(rows);
-  if(itemError){console.error(itemError);alert("The order was created, but its item details need attention. Contact VALAR.");return;}
-  document.getElementById("orderResult").innerHTML=`<strong>Order ${orderNumber} received.</strong><br>Keep this number for reference.`;
-  cart=[];saveCart();e.target.reset();
-};
+function saveCart(render = true) {
 
-document.getElementById("year").textContent=new Date().getFullYear();
+  localStorage.setItem(
+    "valarCart",
+    JSON.stringify(cart)
+  );
+
+
+  if (render) {
+
+    renderCart();
+
+  }
+
+}
+
+
+/* =========================================================
+   REMOVE FROM CART
+========================================================= */
+
+function removeFromCart(id) {
+
+  cart = cart.filter(
+    item =>
+      String(item.id) !== String(id)
+  );
+
+
+  saveCart();
+
+}
+
+
+/* =========================================================
+   CHANGE QUANTITY
+========================================================= */
+
+function changeQty(id, amount) {
+
+  const item =
+    cart.find(
+      cartItem =>
+        String(cartItem.id) === String(id)
+    );
+
+
+  const product =
+    products.find(
+      product =>
+        String(product.id) === String(id)
+    );
+
+
+  if (!item || !product) return;
+
+
+  const newQuantity =
+    item.qty + amount;
+
+
+  if (newQuantity <= 0) {
+
+    removeFromCart(id);
+
+    return;
+
+  }
+
+
+  if (
+    newQuantity >
+    Number(product.stock)
+  ) {
+
+    alert(
+      "You have reached the available stock."
+    );
+
+    return;
+
+  }
+
+
+  item.qty = newQuantity;
+
+  saveCart();
+
+}
+
+
+/* =========================================================
+   CART TOTAL
+========================================================= */
+
+function cartTotal() {
+
+  return cart.reduce(
+    (total, item) => {
+
+      const product =
+        products.find(
+          product =>
+            String(product.id) ===
+            String(item.id)
+        );
+
+
+      if (!product) return total;
+
+
+      return (
+        total +
+        Number(product.price || 0) *
+        Number(item.qty || 0)
+      );
+
+    },
+    0
+  );
+
+}
+
+
+/* =========================================================
+   RENDER CART
+========================================================= */
+
+function renderCart() {
+
+  const cartCount =
+    document.getElementById("cartCount");
+
+  const cartTotalElement =
+    document.getElementById("cartTotal");
+
+  const checkoutTotal =
+    document.getElementById("checkoutTotal");
+
+  const cartItems =
+    document.getElementById("cartItems");
+
+
+  if (!cartCount ||
+      !cartTotalElement ||
+      !checkoutTotal ||
+      !cartItems) {
+
+    return;
+
+  }
+
+
+  const count =
+    cart.reduce(
+      (total, item) =>
+        total + Number(item.qty || 0),
+      0
+    );
+
+
+  cartCount.textContent = count;
+
+  cartTotalElement.textContent =
+    money(cartTotal());
+
+  checkoutTotal.textContent =
+    money(cartTotal());
+
+
+  if (!cart.length) {
+
+    cartItems.innerHTML = `
+      <div class="empty">
+        Your cart is empty.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  cartItems.innerHTML =
+    cart
+      .map(item => {
+
+
+        const product =
+          products.find(
+            product =>
+              String(product.id) ===
+              String(item.id)
+          );
+
+
+        /*
+          Product was deleted or deactivated.
+        */
+
+        if (!product) return "";
+
+
+        const photo =
+          product.image_url
+            ? `
+              <img
+                src="${escapeHtml(product.image_url)}"
+                alt="${escapeHtml(product.name)}"
+              >
+            `
+            : escapeHtml(
+                (product.name || "V")
+                  .charAt(0)
+              );
+
+
+        return `
+          <div class="cart-item">
+
+
+            <div class="mini-photo">
+              ${photo}
+            </div>
+
+
+            <div>
+
+              <h4>
+                ${escapeHtml(product.name)}
+              </h4>
+
+
+              <small>
+                ${money(product.price)}
+                ×
+                ${item.qty}
+              </small>
+
+
+              <br>
+
+
+              <button
+                class="remove"
+                type="button"
+                onclick="removeFromCart('${escapeHtml(product.id)}')"
+              >
+                Remove
+              </button>
+
+            </div>
+
+
+            <div class="qty">
+
+              <button
+                type="button"
+                onclick="changeQty('${escapeHtml(product.id)}', -1)"
+                aria-label="Decrease quantity"
+              >
+                −
+              </button>
+
+
+              <strong>
+                ${item.qty}
+              </strong>
+
+
+              <button
+                type="button"
+                onclick="changeQty('${escapeHtml(product.id)}', 1)"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+
+            </div>
+
+
+          </div>
+        `;
+
+      })
+      .join("");
+
+}
+
+
+/* =========================================================
+   OPEN CART
+========================================================= */
+
+function openCart() {
+
+  const drawer =
+    document.getElementById("cartDrawer");
+
+  const backdrop =
+    document.getElementById("drawerBackdrop");
+
+
+  if (drawer)
+    drawer.classList.add("show");
+
+  if (backdrop)
+    backdrop.classList.add("show");
+
+}
+
+
+/* =========================================================
+   CLOSE CART
+========================================================= */
+
+function closeCart() {
+
+  const drawer =
+    document.getElementById("cartDrawer");
+
+  const backdrop =
+    document.getElementById("drawerBackdrop");
+
+
+  if (drawer)
+    drawer.classList.remove("show");
+
+  if (backdrop)
+    backdrop.classList.remove("show");
+
+}
+
+
+/* =========================================================
+   CART EVENTS
+========================================================= */
+
+const openCartButton =
+  document.getElementById("openCart");
+
+const closeCartButton =
+  document.getElementById("closeCart");
+
+const drawerBackdrop =
+  document.getElementById("drawerBackdrop");
+
+
+if (openCartButton) {
+
+  openCartButton.addEventListener(
+    "click",
+    openCart
+  );
+
+}
+
+
+if (closeCartButton) {
+
+  closeCartButton.addEventListener(
+    "click",
+    closeCart
+  );
+
+}
+
+
+if (drawerBackdrop) {
+
+  drawerBackdrop.addEventListener(
+    "click",
+    closeCart
+  );
+
+}
+
+
+/* =========================================================
+   CHECKOUT
+========================================================= */
+
+const checkoutButton =
+  document.getElementById("checkoutButton");
+
+const checkoutBackdrop =
+  document.getElementById("checkoutBackdrop");
+
+const closeCheckoutButton =
+  document.getElementById("closeCheckout");
+
+
+if (checkoutButton) {
+
+  checkoutButton.addEventListener(
+    "click",
+    function () {
+
+
+      if (!cart.length) {
+
+        alert(
+          "Your cart is empty."
+        );
+
+        return;
+
+      }
+
+
+      checkoutBackdrop.classList.add(
+        "show"
+      );
+
+    }
+  );
+
+}
+
+
+if (closeCheckoutButton) {
+
+  closeCheckoutButton.addEventListener(
+    "click",
+    function () {
+
+      checkoutBackdrop.classList.remove(
+        "show"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CLOSE CHECKOUT WHEN CLICKING BACKDROP
+========================================================= */
+
+if (checkoutBackdrop) {
+
+  checkoutBackdrop.addEventListener(
+    "click",
+    function (event) {
+
+      if (
+        event.target ===
+        checkoutBackdrop
+      ) {
+
+        checkoutBackdrop.classList.remove(
+          "show"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   PLACE ORDER
+========================================================= */
+
+const checkoutForm =
+  document.getElementById("checkoutForm");
+
+
+if (checkoutForm) {
+
+  checkoutForm.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+
+      if (!window.valarSupabase) {
+
+        alert(
+          "The VALAR store is not connected to Supabase."
+        );
+
+        return;
+
+      }
+
+
+      if (!cart.length) {
+
+        alert(
+          "Your cart is empty."
+        );
+
+        return;
+
+      }
+
+
+      /*
+        Make sure every cart item still exists.
+      */
+
+      const validCart =
+        cart.filter(item => {
+
+          const product =
+            products.find(
+              product =>
+                String(product.id) ===
+                String(item.id)
+            );
+
+          return (
+            product &&
+            Number(product.stock) >=
+              Number(item.qty)
+          );
+
+        });
+
+
+      if (
+        validCart.length !==
+        cart.length
+      ) {
+
+        alert(
+          "One or more products in your cart are no longer available. Please review your cart."
+        );
+
+        cart = validCart;
+
+        saveCart();
+
+        return;
+
+      }
+
+
+      const formData =
+        new FormData(this);
+
+
+      const customerName =
+        String(
+          formData.get("name") || ""
+        ).trim();
+
+
+      const phone =
+        String(
+          formData.get("phone") || ""
+        ).trim();
+
+
+      const location =
+        String(
+          formData.get("location") || ""
+        ).trim();
+
+
+      const payment =
+        String(
+          formData.get("payment") || ""
+        ).trim();
+
+
+      if (
+        !customerName ||
+        !phone ||
+        !location ||
+        !payment
+      ) {
+
+        alert(
+          "Please complete all checkout fields."
+        );
+
+        return;
+
+      }
+
+
+      const total =
+        cartTotal();
+
+
+      const orderNumber =
+        "VALAR-" +
+        Date.now()
+          .toString()
+          .slice(-8);
+
+
+      const paymentStatus =
+        payment ===
+        "Cash on delivery / pickup"
+          ? "cash_pending"
+          : "pending";
+
+
+      const order = {
+
+        order_number:
+          orderNumber,
+
+        customer_name:
+          customerName,
+
+        phone:
+          phone,
+
+        delivery_location:
+          location,
+
+        payment_method:
+          payment,
+
+        payment_status:
+          paymentStatus,
+
+        total:
+          total
+
+      };
+
+
+      /*
+        Disable submit button
+        while processing.
+      */
+
+      const submitButton =
+        this.querySelector(
+          'button[type="submit"]'
+        );
+
+
+      if (submitButton) {
+
+        submitButton.disabled = true;
+
+        submitButton.textContent =
+          "PLACING ORDER...";
+
+      }
+
+
+      try {
+
+
+        /* =================================================
+           CREATE ORDER
+        ================================================= */
+
+        const {
+          data: createdOrder,
+          error: orderError
+        } =
+          await window.valarSupabase
+            .from("orders")
+            .insert(order)
+            .select()
+            .single();
+
+
+        if (orderError) {
+
+          console.error(
+            "Order creation error:",
+            orderError
+          );
+
+          throw new Error(
+            "ORDER_CREATE_FAILED"
+          );
+
+        }
+
+
+        /* =================================================
+           CREATE ORDER ITEMS
+        ================================================= */
+
+        const orderItems =
+          cart.map(item => {
+
+            const product =
+              products.find(
+                product =>
+                  String(product.id) ===
+                  String(item.id)
+              );
+
+
+            return {
+
+              order_id:
+                createdOrder.id,
+
+              product_id:
+                product.id,
+
+              product_name:
+                product.name,
+
+              quantity:
+                Number(item.qty),
+
+              unit_price:
+                Number(product.price),
+
+              size:
+                item.size || "",
+
+              color:
+                item.color || "",
+
+              line_total:
+                Number(product.price) *
+                Number(item.qty)
+
+            };
+
+          });
+
+
+        const {
+          error: itemError
+        } =
+          await window.valarSupabase
+            .from("order_items")
+            .insert(orderItems);
+
+
+        if (itemError) {
+
+          console.error(
+            "Order items error:",
+            itemError
+          );
+
+          /*
+            Remove the order if its items
+            could not be created.
+          */
+
+          await window.valarSupabase
+            .from("orders")
+            .delete()
+            .eq(
+              "id",
+              createdOrder.id
+            );
+
+
+          throw new Error(
+            "ITEM_CREATE_FAILED"
+          );
+
+        }
+
+
+        /* =================================================
+           SUCCESS
+        ================================================= */
+
+        const orderResult =
+          document.getElementById(
+            "orderResult"
+          );
+
+
+        if (orderResult) {
+
+          orderResult.innerHTML = `
+            <strong>
+              Order ${escapeHtml(orderNumber)} received.
+            </strong>
+
+            <br>
+
+            Keep this number for reference.
+          `;
+
+        }
+
+
+        /*
+          Clear cart.
+        */
+
+        cart = [];
+
+        saveCart();
+
+
+        /*
+          Reset form.
+        */
+
+        this.reset();
+
+
+        /*
+          Close cart drawer.
+        */
+
+        closeCart();
+
+
+        /*
+          Keep checkout modal open so
+          customer can see confirmation.
+        */
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "VALAR checkout error:",
+          error
+        );
+
+
+        alert(
+          "We could not place your order. Please try again."
+        );
+
+      }
+
+      finally {
+
+        if (submitButton) {
+
+          submitButton.disabled = false;
+
+          submitButton.textContent =
+            "PLACE ORDER";
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CURRENT YEAR
+========================================================= */
+
+const yearElement =
+  document.getElementById("year");
+
+
+if (yearElement) {
+
+  yearElement.textContent =
+    new Date().getFullYear();
+
+}
+
+
+/* =========================================================
+   INITIALIZE STORE
+========================================================= */
+
 loadProducts();

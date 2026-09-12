@@ -522,116 +522,209 @@ a {
 
 .about {
   display: grid;
-
   grid-template-columns: 1fr 1fr;
-
   gap: 60px;
-
   align-items: center;
 }
 
 .about-image {
   background: #fff;
-
   display: flex;
-
   justify-content: center;
 }
 
 .about-image img {
   width: 100%;
-
   max-height: 430px;
-
   object-fit: contain;
+}
+
+.about-content h2 {
+  text-align: center;
 }
 
 .about p:not(.eyebrow) {
   max-width: 540px;
-
   color: #555;
-
   font-size: 15px;
-
   line-height: 1.8;
 }
-
 
 /* =========================================================
    FOOTER
 ========================================================= */
 
-footer {
+.site-footer {
   position: relative;
 
   background: #050505;
 
   color: #fff;
 
-  padding: 45px 8%;
+  padding: 55px 8% 30px;
 
   display: flex;
 
-  align-items: end;
+  flex-direction: column;
 
-  justify-content: space-between;
+  align-items: center;
 
-  gap: 30px;
-}
+  justify-content: center;
 
-footer strong {
-  font-size: 28px;
+  gap: 35px;
 
-  font-weight: 800;
+  text-align: center;
 
-  letter-spacing: 5px;
-}
-
-footer p {
-  color: #aaa;
-
-  font-size: 12px;
-
-  line-height: 1.5;
+  border-top: 1px solid #1c1c1c;
 }
 
 
 /* =========================================================
-   SUBTLE ADMIN LOGIN
+   BRAND
+========================================================= */
+
+.footer-brand {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.footer-brand strong {
+  font-size: 30px;
+
+  font-weight: 800;
+
+  letter-spacing: 7px;
+
+  color: #fff;
+}
+
+.footer-brand p {
+  margin: 0;
+
+  color: #999;
+
+  font-size: 12px;
+
+  letter-spacing: 3px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   COPYRIGHT
+========================================================= */
+
+.footer-bottom {
+  width: 100%;
+
+  padding-top: 25px;
+
+  border-top: 1px solid #1c1c1c;
+}
+
+.footer-bottom p {
+  margin: 0;
+
+  color: #777;
+
+  font-size: 11px;
+
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   SUBTLE ADMIN ACCESS
 ========================================================= */
 
 .hidden-admin-link {
   position: absolute;
 
-  right: 10px;
-  bottom: 8px;
+  right: 8%;
 
-  color: #fff;
+  bottom: 30px;
 
-  font-size: 9px;
-
-  line-height: 1;
+  color: #444;
 
   text-decoration: none;
 
-  opacity: 0.08;
+  font-size: 10px;
 
-  transition:
-    opacity 0.2s ease,
-    text-decoration 0.2s ease;
+  letter-spacing: 1px;
+
+  opacity: 0.35;
+
+  transition: all 0.3s ease;
 }
 
 .hidden-admin-link:hover {
-  opacity: 0.6;
+  color: #aaa;
 
-  text-decoration: underline;
+  opacity: 1;
 }
 
-.hidden-admin-link:focus {
-  opacity: 0.7;
 
-  outline: none;
+/* =========================================================
+   MOBILE
+========================================================= */
 
+@media (max-width: 600px) {
+
+  .site-footer {
+    padding: 45px 6% 25px;
+
+    gap: 30px;
+  }
+
+  .footer-brand strong {
+    font-size: 25px;
+
+    letter-spacing: 5px;
+  }
+
+  .footer-brand p {
+    font-size: 10px;
+
+    letter-spacing: 2px;
+  }
+
+  .footer-bottom {
+    padding-top: 20px;
+  }
+
+  .hidden-admin-link {
+    position: static;
+
+    font-size: 9px;
+  }
+
+}
+
+
+/* =========================================================
+   SUBTLE ADMIN ACCESS
+========================================================= */
+
+.hidden-admin-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #777;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-decoration: none;
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+
+.hidden-admin-link:hover {
+  opacity: 0.8;
   text-decoration: underline;
 }
 
@@ -1165,33 +1258,33 @@ select:focus {
 
 /* Facebook */
 .social-button.facebook {
-  background: #1c1685;
-  border-color: #1c1685;
+  background: #1877F2;
+  border-color: #1877F2;
 }
 
 .social-button.facebook:hover {
-  background: #1c1685;
-  border-color: #1c1685;
+  background: #1877F2;
+  border-color: #1877F2;
 }
 
 /* Instagram */
 .social-button.instagram {
-  background: #e1306c;
-  border-color: #e1306c;
+  background: #D62976;
+  border-color: #D62976;
 }
 
 .social-button.instagram:hover {
-  background: #c9255c;
-  border-color: #c9255c;
+  background: #D62976;
+  border-color: #D62976;
 }
 
 /* WhatsApp */
 .social-button.whatsapp {
-  background: #038b29;
-  border-color: #038b29;
+  background: #25D366;
+  border-color: #25D366;
 }
 
 .social-button.whatsapp:hover {
-  background: #038b29;
-  border-color: #038b29;
+  background: #25D366;
+  border-color: #25D366;
 }

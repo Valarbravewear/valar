@@ -1,194 +1,398 @@
 /* =========================================================
-   VALAR LOGIN
+   VALAR ADMIN LOGIN
    SUPABASE AUTHENTICATION
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
 
-  const form = document.getElementById("loginForm");
-  const msg = document.getElementById("loginMsg");
+/* =========================================================
+   AUTHORIZED VALAR ADMIN EMAILS
+========================================================= */
 
-  if (!form || !msg) {
-    console.error(
-      "VALAR login form or message element not found."
-    );
-    return;
-  }
+const VALAR_ADMIN_EMAILS = [
+  "mejaalex33@gmail.com",
+  "mercydrainagecuthanasia@gmail.com"
+];
 
 
-  /* =======================================================
-     VALAR ADMIN EMAILS
-  ======================================================= */
+/* =========================================================
+   CHECK ADMIN EMAIL
+========================================================= */
 
-  const VALAR_ADMIN_EMAILS = [
-    "mejaalex33@gmail.com",
-    "mercydrainagecuthanasia@gmail.com"
-  ];
+function isValarAdmin(email) {
+
+  const normalizedEmail =
+    String(email || "")
+      .trim()
+      .toLowerCase();
+
+  return VALAR_ADMIN_EMAILS.includes(
+    normalizedEmail
+  );
+}
 
 
-  /* =======================================================
-     LOGIN FORM
-  ======================================================= */
+/* =========================================================
+   LOGIN PAGE
+========================================================= */
 
-  form.addEventListener("submit", async (e) => {
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-    e.preventDefault();
+    const form =
+      document.getElementById("loginForm");
 
-    msg.textContent = "Signing in…";
-
+    const msg =
+      document.getElementById("loginMsg");
 
     const submitButton =
-      form.querySelector('button[type="submit"]');
+      form
+        ? form.querySelector(
+            'button[type="submit"]'
+          )
+        : null;
 
 
-    if (submitButton) {
-      submitButton.disabled = true;
-    }
+    /* =====================================================
+       CHECK FORM
+    ===================================================== */
 
-
-    try {
-
-      /* =====================================================
-         CHECK SUPABASE
-      ===================================================== */
-
-      if (!window.valarSupabase) {
-
-        msg.textContent =
-          "Database connection is not configured.";
-
-        return;
-      }
-
-
-      /* =====================================================
-         GET FORM DATA
-      ===================================================== */
-
-      const data = new FormData(form);
-
-      const email =
-        String(data.get("email") || "")
-          .trim()
-          .toLowerCase();
-
-      const password =
-        String(data.get("password") || "");
-
-
-      if (!email || !password) {
-
-        msg.textContent =
-          "Please enter your email and password.";
-
-        return;
-      }
-
-
-      /* =====================================================
-         SIGN IN
-      ===================================================== */
-
-      const { data: authData, error } =
-        await window.valarSupabase.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
-
-
-      if (error) {
-
-        console.error(
-          "VALAR login error:",
-          error
-        );
-
-        msg.textContent =
-          error.message || "Unable to sign in.";
-
-        return;
-      }
-
-
-      /* =====================================================
-         VERIFY SESSION
-      ===================================================== */
-
-      if (
-        !authData ||
-        !authData.session ||
-        !authData.user
-      ) {
-
-        msg.textContent =
-          "Login failed. No active session was created.";
-
-        return;
-      }
-
-
-      /* =====================================================
-         VERIFY ADMIN EMAIL
-      ===================================================== */
-
-      const loggedInEmail =
-        String(authData.user.email || "")
-          .trim()
-          .toLowerCase();
-
-
-      if (!VALAR_ADMIN_EMAILS.includes(loggedInEmail)) {
-
-        console.warn(
-          "Unauthorized VALAR login attempt:",
-          loggedInEmail
-        );
-
-
-        /* Sign the unauthorized account back out */
-
-        await window.valarSupabase.auth.signOut();
-
-
-        msg.textContent =
-          "This account is not authorized to access the VALAR admin area.";
-
-        return;
-      }
-
-
-      /* =====================================================
-         SUCCESS
-      ===================================================== */
-
-      msg.textContent =
-        "Login successful. Redirecting…";
-
-
-      window.location.href =
-        "index.html";
-
-
-    } catch (error) {
+    if (!form || !msg) {
 
       console.error(
-        "Unexpected VALAR login error:",
-        error
+        "VALAR ERROR: Login form not found."
       );
 
-
-      msg.textContent =
-        "Something went wrong. Please try again.";
-
-
-    } finally {
-
-      if (submitButton) {
-        submitButton.disabled = false;
-      }
-
+      return;
     }
 
-  });
+
+    /* =====================================================
+       CHECK SUPABASE
+    ===================================================== */
+
+    if (!window.valarSupabase) {
+
+      console.error(
+        "VALAR ERROR: Supabase client is not available."
+      );
+
+      msg.textContent =
+        "Supabase connection is unavailable. Check config.js.";
+
+      return;
+    }
+
+
+    console.log(
+      "VALAR login page connected to Supabase."
+    );
+
+
+    /* =====================================================
+       LOGIN SUBMIT
+    ===================================================== */
+
+    form.addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        /* =================================================
+           BUTTON STATE
+        ================================================= */
+
+        msg.textContent =
+          "Signing in…";
+
+
+        if (submitButton) {
+
+          submitButton.disabled =
+            true;
+
+          submitButton.textContent =
+            "SIGNING IN…";
+        }
+
+
+        try {
+
+          /* ===============================================
+             GET FORM DATA
+          =============================================== */
+
+          const formData =
+            new FormData(form);
+
+
+          const email =
+            String(
+              formData.get("email") || ""
+            )
+              .trim()
+              .toLowerCase();
+
+
+          const password =
+            String(
+              formData.get("password") || ""
+            );
+
+
+          /* ===============================================
+             VALIDATE INPUT
+          =============================================== */
+
+          if (!email) {
+
+            msg.textContent =
+              "Please enter your admin email.";
+
+            return;
+          }
+
+
+          if (!password) {
+
+            msg.textContent =
+              "Please enter your password.";
+
+            return;
+          }
+
+
+          /* ===============================================
+             CHECK AUTHORIZED EMAIL
+          =============================================== */
+
+          if (!isValarAdmin(email)) {
+
+            msg.textContent =
+              "This email is not authorized to access VALAR Admin.";
+
+            return;
+          }
+
+
+          console.log(
+            "VALAR login attempt:",
+            email
+          );
+
+
+          /* ===============================================
+             SIGN IN WITH SUPABASE
+          =============================================== */
+
+          const result =
+            await window.valarSupabase
+              .auth
+              .signInWithPassword({
+                email: email,
+                password: password
+              });
+
+
+          const data =
+            result.data;
+
+          const error =
+            result.error;
+
+
+          /* ===============================================
+             SUPABASE ERROR
+          =============================================== */
+
+          if (error) {
+
+            console.error(
+              "VALAR Supabase login error:",
+              error
+            );
+
+
+            if (
+              error.message
+                .toLowerCase()
+                .includes("invalid login credentials")
+            ) {
+
+              msg.textContent =
+                "Invalid email or password. Check the Supabase Auth account.";
+
+            }
+
+            else {
+
+              msg.textContent =
+                error.message ||
+                "Unable to sign in.";
+            }
+
+
+            return;
+          }
+
+
+          /* ===============================================
+             VERIFY USER
+          =============================================== */
+
+          if (
+            !data ||
+            !data.user
+          ) {
+
+            msg.textContent =
+              "Login failed. Supabase did not return a user.";
+
+            return;
+          }
+
+
+          /* ===============================================
+             VERIFY SESSION
+          =============================================== */
+
+          if (!data.session) {
+
+            msg.textContent =
+              "Login failed. No active session was created.";
+
+            return;
+          }
+
+
+          /* ===============================================
+             VERIFY ACTUAL EMAIL
+          =============================================== */
+
+          const loggedInEmail =
+            String(
+              data.user.email || ""
+            )
+              .trim()
+              .toLowerCase();
+
+
+          if (!isValarAdmin(loggedInEmail)) {
+
+            console.warn(
+              "Unauthorized VALAR account:",
+              loggedInEmail
+            );
+
+
+            await window.valarSupabase
+              .auth
+              .signOut();
+
+
+            msg.textContent =
+              "This account is not authorized to access VALAR Admin.";
+
+            return;
+          }
+
+
+          /* ===============================================
+             SUCCESS
+          =============================================== */
+
+          console.log(
+            "VALAR login successful:",
+            loggedInEmail
+          );
+
+
+          msg.classList.remove("error");
+msg.classList.add("success");
+
+msg.textContent =
+  "Login successful. Opening valar adminitration page…";
+
+
+          /* ===============================================
+             OPEN ADMIN DASHBOARD
+          =============================================== */
+
+          window.location.href =
+            "admin.html";
+        }
+
+
+        /* =================================================
+           UNEXPECTED ERROR
+        ================================================= */
+
+        catch (error) {
+
+          console.error(
+            "VALAR unexpected login error:",
+            error
+          );
+
+
+          msg.textContent =
+            error.message ||
+            "Something went wrong. Please try again.";
+        }
+
+
+        /* =================================================
+           RESTORE BUTTON
+        ================================================= */
+
+        finally {
+
+          if (submitButton) {
+
+            submitButton.disabled =
+              false;
+
+            submitButton.textContent =
+              "LOGIN";
+          }
+        }
+
+      }
+    );
+
+  }
+);
+const passwordInput = document.getElementById("password");
+const passwordToggle = document.getElementById("passwordToggle");
+
+passwordToggle.addEventListener("click", function () {
+
+  if (passwordInput.type === "password") {
+
+    // SHOW PASSWORD
+    passwordInput.type = "text";
+
+    passwordToggle.classList.add("showing");
+
+    passwordToggle.setAttribute(
+      "aria-label",
+      "Hide password"
+    );
+
+  } else {
+
+    // HIDE PASSWORD
+    passwordInput.type = "password";
+
+    passwordToggle.classList.remove("showing");
+
+    passwordToggle.setAttribute(
+      "aria-label",
+      "Show password"
+    );
+
+  }
 
 });
