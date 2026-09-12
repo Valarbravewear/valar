@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="valar-logo-dark.jpg"
-     alt="VALAR Logo"
-     width="220"
-     style="border-radius: 50%;">
+  <img src="valar-logo-dark.jpg" alt="VALAR Logo" width="220" style="border-radius: 50%;">
+</p>
 </p><p align="center">
   <strong>BRAVE & WEAR</strong>
 </p><p align="center">
