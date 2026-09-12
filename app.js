@@ -1,6 +1,6 @@
 /* =========================================================
    VALAR CUSTOMER STORE
-   SUPABASE VERSION
+   SUPABASE + ONEKHUSA PAYMENT VERSION
 ========================================================= */
 
 
@@ -18,12 +18,23 @@ let selectedCategory = "All";
 
 
 /* =========================================================
+   CONFIGURATION
+========================================================= */
+
+const CREATE_PAYMENT_FUNCTION =
+  "https://ppjhtybunodezwwufxia.supabase.co/functions/v1/create-payment";
+
+
+/* =========================================================
    MONEY FORMAT
 ========================================================= */
 
 function money(value) {
 
-  return "MWK " + Number(value || 0).toLocaleString("en-US");
+  return (
+    "MWK " +
+    Number(value || 0).toLocaleString("en-US")
+  );
 
 }
 
@@ -58,16 +69,14 @@ function productImage(product) {
     String(product.image_url || "").trim();
 
 
-  /* =======================================================
-     ACTUAL PRODUCT IMAGE
-  ======================================================= */
-
   if (imageUrl) {
 
     return `
       <img
         src="${escapeHtml(imageUrl)}"
-        alt="${escapeHtml(product.name || "VALAR product")}"
+        alt="${escapeHtml(
+          product.name || "VALAR product"
+        )}"
         loading="lazy"
         onerror="this.onerror=null;this.style.display='none';this.parentElement.classList.add('image-error');"
       >
@@ -75,10 +84,6 @@ function productImage(product) {
 
   }
 
-
-  /* =======================================================
-     FALLBACK
-  ======================================================= */
 
   return `
     <div class="placeholder">
@@ -101,7 +106,9 @@ function productImage(product) {
 async function loadProducts() {
 
   const grid =
-    document.getElementById("productGrid");
+    document.getElementById(
+      "productGrid"
+    );
 
 
   if (!grid) {
@@ -203,7 +210,6 @@ async function loadProducts() {
 
     saveCart(false);
 
-
     renderFilters();
 
     renderProducts();
@@ -238,7 +244,9 @@ async function loadProducts() {
 function renderFilters() {
 
   const filters =
-    document.getElementById("filters");
+    document.getElementById(
+      "filters"
+    );
 
 
   if (!filters) {
@@ -301,7 +309,6 @@ function renderFilters() {
 
           selectedCategory =
             this.dataset.category;
-
 
           renderFilters();
 
@@ -954,13 +961,21 @@ if (drawerBackdrop) {
 ========================================================= */
 
 const checkoutButton =
-  document.getElementById("checkoutButton");
+  document.getElementById(
+    "checkoutButton"
+  );
+
 
 const checkoutBackdrop =
-  document.getElementById("checkoutBackdrop");
+  document.getElementById(
+    "checkoutBackdrop"
+  );
+
 
 const closeCheckoutButton =
-  document.getElementById("closeCheckout");
+  document.getElementById(
+    "closeCheckout"
+  );
 
 
 /* =========================================================
@@ -971,16 +986,19 @@ function openCheckout() {
 
   if (!cart.length) {
 
-    alert("Your cart is empty.");
+    alert(
+      "Your cart is empty."
+    );
 
     return;
   }
 
 
-  /* Update checkout total */
-
   const checkoutTotal =
-    document.getElementById("checkoutTotal");
+    document.getElementById(
+      "checkoutTotal"
+    );
+
 
   if (checkoutTotal) {
 
@@ -990,16 +1008,14 @@ function openCheckout() {
   }
 
 
-  /* Close cart drawer */
-
   closeCart();
 
 
-  /* Open checkout form */
-
   if (checkoutBackdrop) {
 
-    checkoutBackdrop.classList.add("show");
+    checkoutBackdrop.classList.add(
+      "show"
+    );
 
   }
 
@@ -1028,7 +1044,9 @@ function closeCheckout() {
 
   if (checkoutBackdrop) {
 
-    checkoutBackdrop.classList.remove("show");
+    checkoutBackdrop.classList.remove(
+      "show"
+    );
 
   }
 
@@ -1056,7 +1074,8 @@ if (checkoutBackdrop) {
     function (event) {
 
       if (
-        event.target === checkoutBackdrop
+        event.target ===
+        checkoutBackdrop
       ) {
 
         closeCheckout();
@@ -1065,6 +1084,516 @@ if (checkoutBackdrop) {
 
     }
   );
+
+}
+
+
+/* =========================================================
+   PAYMENT ELEMENTS
+========================================================= */
+
+const paymentMethod =
+  document.getElementById(
+    "paymentMethod"
+  );
+
+
+const paymentInstructions =
+  document.getElementById(
+    "paymentInstructions"
+  );
+
+
+const paymentTitle =
+  document.getElementById(
+    "paymentTitle"
+  );
+
+
+const paymentText =
+  document.getElementById(
+    "paymentText"
+  );
+
+
+const mobileMoneyFields =
+  document.getElementById(
+    "mobileMoneyFields"
+  );
+
+
+const mobileMoneyPhone =
+  document.getElementById(
+    "mobileMoneyPhone"
+  );
+
+
+/* =========================================================
+   PAYMENT INSTRUCTIONS
+========================================================= */
+
+function updatePaymentInstructions() {
+
+  if (!paymentMethod) {
+    return;
+  }
+
+
+  const method =
+    paymentMethod.value;
+
+
+  if (mobileMoneyFields) {
+
+    mobileMoneyFields.hidden =
+      !(
+        method ===
+          "Airtel Money" ||
+        method ===
+          "Mpamba"
+      );
+
+  }
+
+
+  if (mobileMoneyPhone) {
+
+    mobileMoneyPhone.required =
+      (
+        method ===
+          "Airtel Money" ||
+        method ===
+          "Mpamba"
+      );
+
+  }
+
+
+  if (!paymentInstructions) {
+    return;
+  }
+
+
+  if (method === "Airtel Money") {
+
+    paymentInstructions.hidden =
+      false;
+
+
+    if (paymentTitle) {
+
+      paymentTitle.textContent =
+        "Airtel Money";
+
+    }
+
+
+    if (paymentText) {
+
+      paymentText.textContent =
+        "After placing your order, OneKhusa will open a secure payment checkout where you can authorize your Airtel Money payment.";
+
+    }
+
+
+  }
+
+  else if (method === "Mpamba") {
+
+    paymentInstructions.hidden =
+      false;
+
+
+    if (paymentTitle) {
+
+      paymentTitle.textContent =
+        "TNM Mpamba";
+
+    }
+
+
+    if (paymentText) {
+
+      paymentText.textContent =
+        "After placing your order, OneKhusa will open a secure payment checkout where you can authorize your TNM Mpamba payment.";
+
+    }
+
+
+  }
+
+  else if (
+    method ===
+    "Cash on delivery / pickup"
+  ) {
+
+    paymentInstructions.hidden =
+      false;
+
+
+    if (paymentTitle) {
+
+      paymentTitle.textContent =
+        "Cash payment";
+
+    }
+
+
+    if (paymentText) {
+
+      paymentText.textContent =
+        "Pay cash when your order is delivered or when you collect it.";
+
+    }
+
+
+  }
+
+  else if (
+    method ===
+    "Visa Card"
+  ) {
+
+    paymentInstructions.hidden =
+      false;
+
+
+    if (paymentTitle) {
+
+      paymentTitle.textContent =
+        "Visa Card";
+
+    }
+
+
+    if (paymentText) {
+
+      paymentText.textContent =
+        "Online Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or cash.";
+
+    }
+
+
+  }
+
+  else {
+
+    paymentInstructions.hidden =
+      true;
+
+  }
+
+}
+
+
+if (paymentMethod) {
+
+  paymentMethod.addEventListener(
+    "change",
+    updatePaymentInstructions
+  );
+
+}
+
+
+/* =========================================================
+   CREATE ORDER
+========================================================= */
+
+async function createValarOrder({
+
+  customerName,
+  phone,
+  location,
+  payment,
+  total
+
+}) {
+
+  const orderNumber =
+    "VALAR-" +
+    Date.now()
+      .toString()
+      .slice(-8);
+
+
+  const paymentStatus =
+    payment ===
+      "Cash on delivery / pickup"
+      ? "cash_pending"
+      : "pending";
+
+
+  const order = {
+
+    order_number:
+      orderNumber,
+
+    customer_name:
+      customerName,
+
+    phone:
+      phone,
+
+    delivery_location:
+      location,
+
+    payment_method:
+      payment,
+
+    payment_status:
+      paymentStatus,
+
+    payment_provider:
+      (
+        payment ===
+          "Airtel Money" ||
+        payment ===
+          "Mpamba"
+      )
+        ? "OneKhusa"
+        : null,
+
+    total:
+      total
+
+  };
+
+
+  const {
+    data: createdOrder,
+    error: orderError
+  } =
+    await window.valarSupabase
+      .from("orders")
+      .insert(order)
+      .select()
+      .single();
+
+
+  if (orderError) {
+
+    console.error(
+      "Order creation error:",
+      orderError
+    );
+
+
+    throw new Error(
+      "ORDER_CREATE_FAILED"
+    );
+
+  }
+
+
+  const orderItems =
+    cart.map(item => {
+
+      const product =
+        products.find(
+          product =>
+            String(product.id) ===
+            String(item.id)
+        );
+
+
+      return {
+
+        order_id:
+          createdOrder.id,
+
+        product_id:
+          product.id,
+
+        product_name:
+          product.name,
+
+        quantity:
+          Number(item.qty),
+
+        unit_price:
+          Number(product.price),
+
+        size:
+          item.size || "",
+
+        color:
+          item.color || "",
+
+        line_total:
+          Number(product.price) *
+          Number(item.qty)
+
+      };
+
+    });
+
+
+  const {
+    error: itemError
+  } =
+    await window.valarSupabase
+      .from("order_items")
+      .insert(orderItems);
+
+
+  if (itemError) {
+
+    console.error(
+      "Order items error:",
+      itemError
+    );
+
+
+    await window.valarSupabase
+      .from("orders")
+      .delete()
+      .eq(
+        "id",
+        createdOrder.id
+      );
+
+
+    throw new Error(
+      "ITEM_CREATE_FAILED"
+    );
+
+  }
+
+
+  return createdOrder;
+
+}
+
+
+/* =========================================================
+   START ONEKHUSA PAYMENT
+========================================================= */
+
+async function startOneKhusaPayment(
+  orderNumber
+) {
+
+  console.log(
+    "Starting OneKhusa payment for:",
+    orderNumber
+  );
+
+
+  const response =
+    await fetch(
+      CREATE_PAYMENT_FUNCTION,
+      {
+
+        method:
+          "POST",
+
+        headers: {
+
+          "Content-Type":
+            "application/json"
+
+        },
+
+        body:
+          JSON.stringify({
+
+            orderNumber:
+              orderNumber
+
+          })
+
+      }
+    );
+
+
+  const responseText =
+    await response.text();
+
+
+  let result;
+
+
+  try {
+
+    result =
+      JSON.parse(
+        responseText
+      );
+
+  }
+
+  catch {
+
+    console.error(
+      "Invalid payment function response:",
+      responseText
+    );
+
+
+    throw new Error(
+      "PAYMENT_FUNCTION_INVALID_RESPONSE"
+    );
+
+  }
+
+
+  if (
+    !response.ok ||
+    !result.success ||
+    !result.checkoutUrl
+  ) {
+
+    console.error(
+      "OneKhusa payment error:",
+      result
+    );
+
+
+    throw new Error(
+      result.error ||
+      "PAYMENT_INITIALIZATION_FAILED"
+    );
+
+  }
+
+
+  return result.checkoutUrl;
+
+}
+
+
+/* =========================================================
+   SHOW ORDER RESULT
+========================================================= */
+
+function showOrderResult(
+  orderNumber,
+  message
+) {
+
+  const orderResult =
+    document.getElementById(
+      "orderResult"
+    );
+
+
+  if (!orderResult) {
+    return;
+  }
+
+
+  orderResult.innerHTML = `
+
+    <strong>
+      Order ${escapeHtml(orderNumber)}
+    </strong>
+
+    <br>
+
+    ${escapeHtml(message)}
+
+  `;
 
 }
 
@@ -1094,7 +1623,6 @@ if (checkoutForm) {
           "The VALAR store is not connected to Supabase."
         );
 
-
         return;
       }
 
@@ -1105,10 +1633,13 @@ if (checkoutForm) {
           "Your cart is empty."
         );
 
-
         return;
       }
 
+
+      /* ===================================================
+         CHECK CURRENT STOCK
+      =================================================== */
 
       const validCart =
         cart.filter(item => {
@@ -1151,6 +1682,10 @@ if (checkoutForm) {
       }
 
 
+      /* ===================================================
+         FORM DATA
+      =================================================== */
+
       const formData =
         new FormData(this);
 
@@ -1179,6 +1714,18 @@ if (checkoutForm) {
         ).trim();
 
 
+      const selectedMobileNumber =
+        String(
+          formData.get(
+            "mobileMoneyPhone"
+          ) || ""
+        ).trim();
+
+
+      /* ===================================================
+         BASIC VALIDATION
+      =================================================== */
+
       if (
         !customerName ||
         !phone ||
@@ -1190,54 +1737,73 @@ if (checkoutForm) {
           "Please complete all checkout fields."
         );
 
+        return;
+      }
+
+
+      /* ===================================================
+         VISA NOT READY
+      =================================================== */
+
+      if (
+        payment ===
+        "Visa Card"
+      ) {
+
+        alert(
+          "Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or Cash on delivery / pickup."
+        );
 
         return;
       }
 
 
+      /* ===================================================
+         MOBILE MONEY NUMBER
+      =================================================== */
+
+      if (
+        (
+          payment ===
+            "Airtel Money" ||
+          payment ===
+            "Mpamba"
+        ) &&
+        !selectedMobileNumber
+      ) {
+
+        alert(
+          "Please enter your mobile-money number."
+        );
+
+        return;
+      }
+
+
+      /* ===================================================
+         TOTAL
+      =================================================== */
+
       const total =
         cartTotal();
 
 
-      const orderNumber =
-        "VALAR-" +
-        Date.now()
-          .toString()
-          .slice(-8);
+      if (
+        !Number.isFinite(total) ||
+        total <= 0
+      ) {
+
+        alert(
+          "Your order total is invalid."
+        );
+
+        return;
+      }
 
 
-      const paymentStatus =
-        payment ===
-        "Cash on delivery / pickup"
-          ? "cash_pending"
-          : "pending";
-
-
-      const order = {
-
-        order_number:
-          orderNumber,
-
-        customer_name:
-          customerName,
-
-        phone:
-          phone,
-
-        delivery_location:
-          location,
-
-        payment_method:
-          payment,
-
-        payment_status:
-          paymentStatus,
-
-        total:
-          total
-
-      };
-
+      /* ===================================================
+         BUTTON
+      =================================================== */
 
       const submitButton =
         this.querySelector(
@@ -1252,144 +1818,166 @@ if (checkoutForm) {
 
 
         submitButton.textContent =
-          "PLACING ORDER...";
+          (
+            payment ===
+              "Airtel Money" ||
+            payment ===
+              "Mpamba"
+          )
+            ? "STARTING PAYMENT..."
+            : "PLACING ORDER...";
 
       }
 
 
       try {
 
-        const {
-          data: createdOrder,
-          error: orderError
-        } =
-          await window.valarSupabase
-            .from("orders")
-            .insert(order)
-            .select()
-            .single();
+        /* =================================================
+           CREATE ORDER
+        ================================================= */
 
+        const createdOrder =
+          await createValarOrder({
 
-        if (orderError) {
+            customerName:
+              customerName,
 
-          console.error(
-            "Order creation error:",
-            orderError
-          );
+            phone:
+              phone,
 
+            location:
+              location,
 
-          throw new Error(
-            "ORDER_CREATE_FAILED"
-          );
+            payment:
+              payment,
 
-        }
-
-
-        const orderItems =
-          cart.map(item => {
-
-            const product =
-              products.find(
-                product =>
-                  String(product.id) ===
-                  String(item.id)
-              );
-
-
-            return {
-
-              order_id:
-                createdOrder.id,
-
-              product_id:
-                product.id,
-
-              product_name:
-                product.name,
-
-              quantity:
-                Number(item.qty),
-
-              unit_price:
-                Number(product.price),
-
-              size:
-                item.size || "",
-
-              color:
-                item.color || "",
-
-              line_total:
-                Number(product.price) *
-                Number(item.qty)
-
-            };
+            total:
+              total
 
           });
 
 
-        const {
-          error: itemError
-        } =
-          await window.valarSupabase
-            .from("order_items")
-            .insert(orderItems);
+        const orderNumber =
+          createdOrder.order_number;
 
 
-        if (itemError) {
+        /* =================================================
+           MOBILE MONEY
+        ================================================= */
 
-          console.error(
-            "Order items error:",
-            itemError
+        if (
+          payment ===
+            "Airtel Money" ||
+          payment ===
+            "Mpamba"
+        ) {
+
+          showOrderResult(
+            orderNumber,
+            "Opening secure OneKhusa payment checkout..."
           );
 
 
-          await window.valarSupabase
-            .from("orders")
-            .delete()
-            .eq(
-              "id",
-              createdOrder.id
+          try {
+
+            const checkoutUrl =
+              await startOneKhusaPayment(
+                orderNumber
+              );
+
+
+            /*
+              Save order number locally so
+              it can be recovered if the
+              customer returns to VALAR.
+            */
+
+            localStorage.setItem(
+              "valarPendingPaymentOrder",
+              orderNumber
             );
 
 
-          throw new Error(
-            "ITEM_CREATE_FAILED"
-          );
+            /*
+              Keep the cart until the payment
+              flow has started successfully.
+            */
+
+            window.location.href =
+              checkoutUrl;
+
+
+            return;
+
+          }
+
+          catch (paymentError) {
+
+            console.error(
+              "OneKhusa start error:",
+              paymentError
+            );
+
+
+            alert(
+              "Your order was created, but we could not start the OneKhusa payment. Please try again or contact VALAR with your order number: " +
+              orderNumber
+            );
+
+
+            showOrderResult(
+              orderNumber,
+              "Payment could not be started. Keep this order number and contact VALAR if necessary."
+            );
+
+
+            return;
+
+          }
 
         }
 
 
-        const orderResult =
-          document.getElementById(
-            "orderResult"
+        /* =================================================
+           CASH ORDER
+        ================================================= */
+
+        if (
+          payment ===
+          "Cash on delivery / pickup"
+        ) {
+
+          showOrderResult(
+            orderNumber,
+            "Pay cash when your order is delivered or collected."
           );
 
 
-        if (orderResult) {
+          cart = [];
 
-          orderResult.innerHTML = `
-            <strong>
-              Order ${escapeHtml(orderNumber)} received.
-            </strong>
+          saveCart();
 
-            <br>
 
-            Keep this number for reference.
-          `;
+          this.reset();
+
+
+          updatePaymentInstructions();
+
+
+          closeCheckout();
+
+
+          alert(
+            "Order " +
+            orderNumber +
+            " received. Please keep this number for reference."
+          );
+
+
+          return;
 
         }
 
-
-        cart = [];
-
-        saveCart();
-
-
-        this.reset();
-
-
-        closeCart();
 
       }
 
@@ -1447,86 +2035,14 @@ if (yearElement) {
 
 
 /* =========================================================
+   INITIAL PAYMENT UI
+========================================================= */
+
+updatePaymentInstructions();
+
+
+/* =========================================================
    INITIALIZE STORE
 ========================================================= */
 
 loadProducts();
-/* =========================================================
-   VALAR PAYMENT INSTRUCTIONS
-========================================================= */
-
-const paymentMethod = document.getElementById("paymentMethod");
-const paymentInstructions =
-  document.getElementById("paymentInstructions");
-const paymentTitle =
-  document.getElementById("paymentTitle");
-const paymentText =
-  document.getElementById("paymentText");
-
-
-if (paymentMethod) {
-
-  paymentMethod.addEventListener("change", () => {
-
-    const method = paymentMethod.value;
-
-    if (!paymentInstructions) return;
-
-    if (method === "Airtel Money") {
-
-      paymentInstructions.hidden = false;
-
-      paymentTitle.textContent = "Airtel Money";
-
-      paymentText.textContent =
-        "Send your payment to the VALAR Airtel Money number. " +
-        "Use your order number as the payment reference. " +
-        "Your order will be confirmed after payment is verified.";
-
-    }
-
-    else if (method === "Mpamba") {
-
-      paymentInstructions.hidden = false;
-
-      paymentTitle.textContent = "TNM Mpamba";
-
-      paymentText.textContent =
-        "Send your payment to the VALAR TNM Mpamba number. " +
-        "Use your order number as the payment reference. " +
-        "Your order will be confirmed after payment is verified.";
-
-    }
-
-    else if (method === "Cash on delivery / pickup") {
-
-      paymentInstructions.hidden = false;
-
-      paymentTitle.textContent = "Cash payment";
-
-      paymentText.textContent =
-        "Pay cash when your order is delivered or when you collect it.";
-
-    }
-
-    else if (method === "Visa Card") {
-
-      paymentInstructions.hidden = false;
-
-      paymentTitle.textContent = "Visa Card";
-
-      paymentText.textContent =
-        "Online card payment is not connected yet. " +
-        "Please choose Airtel Money, TNM Mpamba, or cash for now.";
-
-    }
-
-    else {
-
-      paymentInstructions.hidden = true;
-
-    }
-
-  });
-
-}
