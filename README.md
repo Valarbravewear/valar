@@ -1,7 +1,7 @@
 <p align="center">
   <img src="valar-logo-round.png" alt="VALAR Logo" width="220">
 </p>
-</p><p align="center">
+<p align="center">
   <strong>BRAVE & WEAR</strong>
 </p><p align="center">
   Fashion built for those who dare to stand out.
