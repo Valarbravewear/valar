@@ -1451,3 +1451,82 @@ if (yearElement) {
 ========================================================= */
 
 loadProducts();
+/* =========================================================
+   VALAR PAYMENT INSTRUCTIONS
+========================================================= */
+
+const paymentMethod = document.getElementById("paymentMethod");
+const paymentInstructions =
+  document.getElementById("paymentInstructions");
+const paymentTitle =
+  document.getElementById("paymentTitle");
+const paymentText =
+  document.getElementById("paymentText");
+
+
+if (paymentMethod) {
+
+  paymentMethod.addEventListener("change", () => {
+
+    const method = paymentMethod.value;
+
+    if (!paymentInstructions) return;
+
+    if (method === "Airtel Money") {
+
+      paymentInstructions.hidden = false;
+
+      paymentTitle.textContent = "Airtel Money";
+
+      paymentText.textContent =
+        "Send your payment to the VALAR Airtel Money number. " +
+        "Use your order number as the payment reference. " +
+        "Your order will be confirmed after payment is verified.";
+
+    }
+
+    else if (method === "Mpamba") {
+
+      paymentInstructions.hidden = false;
+
+      paymentTitle.textContent = "TNM Mpamba";
+
+      paymentText.textContent =
+        "Send your payment to the VALAR TNM Mpamba number. " +
+        "Use your order number as the payment reference. " +
+        "Your order will be confirmed after payment is verified.";
+
+    }
+
+    else if (method === "Cash on delivery / pickup") {
+
+      paymentInstructions.hidden = false;
+
+      paymentTitle.textContent = "Cash payment";
+
+      paymentText.textContent =
+        "Pay cash when your order is delivered or when you collect it.";
+
+    }
+
+    else if (method === "Visa Card") {
+
+      paymentInstructions.hidden = false;
+
+      paymentTitle.textContent = "Visa Card";
+
+      paymentText.textContent =
+        "Online card payment is not connected yet. " +
+        "Please choose Airtel Money, TNM Mpamba, or cash for now.";
+
+    }
+
+    else {
+
+      paymentInstructions.hidden = true;
+
+    }
+
+  });
+
+}
