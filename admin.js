@@ -230,6 +230,11 @@ function render() {
   const salesTotal =
     document.getElementById("salesTotal");
 
+
+  /* =======================================================
+     DASHBOARD STATS
+  ======================================================= */
+
   if (productCount) {
     productCount.textContent =
       products.length;
@@ -343,7 +348,7 @@ function render() {
 
       ordersBody.innerHTML = `
         <tr>
-          <td colspan="6">
+          <td colspan="7">
             No orders found.
           </td>
         </tr>
@@ -415,8 +420,7 @@ function render() {
                       <option
                         value="${status}"
                         ${
-                          status ===
-                          order.order_status
+                          status === order.order_status
                             ? "selected"
                             : ""
                         }
@@ -444,10 +448,21 @@ function render() {
 
               </td>
 
+              <td class="actions">
+
+                <button
+                  type="button"
+                  class="delete-order-button"
+                  onclick="deleteOrder('${esc(order.id)}')"
+                >
+                  Delete
+                </button>
+
+              </td>
+
             </tr>
 
           `)
-
           .join("");
     }
   }
@@ -533,7 +548,7 @@ function showValarMessage(
 
 
 /* =========================================================
-   VALAR DELETE CONFIRMATION MODAL
+   PRODUCT DELETE CONFIRMATION
 ========================================================= */
 
 function showDeleteConfirmation(
@@ -580,6 +595,90 @@ function showDeleteConfirmation(
 
     text.textContent =
       `Are you sure you want to delete "${productName}"?`;
+
+    backdrop.classList.add("show");
+
+
+    function finish(result) {
+
+      backdrop.classList.remove("show");
+
+      cancelButton.onclick = null;
+
+      deleteButton.onclick = null;
+
+      resolve(result);
+    }
+
+
+    cancelButton.onclick =
+      () => finish(false);
+
+    deleteButton.onclick =
+      () => finish(true);
+
+  });
+}
+
+
+/* =========================================================
+   ORDER DELETE CONFIRMATION
+========================================================= */
+
+function showOrderDeleteConfirmation(
+  order
+) {
+
+  return new Promise(resolve => {
+
+    const backdrop =
+      document.getElementById(
+        "valarOrderConfirmBackdrop"
+      );
+
+    const text =
+      document.getElementById(
+        "valarOrderConfirmText"
+      );
+
+    const cancelButton =
+      document.getElementById(
+        "valarOrderConfirmCancel"
+      );
+
+    const deleteButton =
+      document.getElementById(
+        "valarOrderConfirmDelete"
+      );
+
+    if (
+      !backdrop ||
+      !text ||
+      !cancelButton ||
+      !deleteButton
+    ) {
+
+      console.error(
+        "VALAR order confirmation modal is missing."
+      );
+
+      alert(
+        "Order confirmation modal is missing from admin.html."
+      );
+
+      resolve(false);
+
+      return;
+    }
+
+    const orderNumber =
+      order &&
+      order.order_number
+        ? order.order_number
+        : "this order";
+
+    text.textContent =
+      `Are you sure you want to permanently delete order "${orderNumber}"?`;
 
     backdrop.classList.add("show");
 
@@ -1032,10 +1131,6 @@ window.deleteProduct = async function(id) {
   }
 
 
-  /* =======================================================
-     SHOW CUSTOM VALAR CONFIRMATION
-  ======================================================= */
-
   const confirmed =
     await showDeleteConfirmation(
       product.name
@@ -1047,10 +1142,6 @@ window.deleteProduct = async function(id) {
 
 
   try {
-
-    /* =====================================================
-       DELETE PRODUCT FROM DATABASE
-    ===================================================== */
 
     const {
       error
@@ -1076,10 +1167,6 @@ window.deleteProduct = async function(id) {
     }
 
 
-    /* =====================================================
-       REMOVE IMAGE FROM STORAGE
-    ===================================================== */
-
     if (product.image_url) {
 
       await deleteProductImage(
@@ -1088,16 +1175,8 @@ window.deleteProduct = async function(id) {
     }
 
 
-    /* =====================================================
-       REFRESH PRODUCTS
-    ===================================================== */
-
     await load();
 
-
-    /* =====================================================
-       SHOW SUCCESS MESSAGE
-    ===================================================== */
 
     showValarMessage(
       "Product Deleted",
@@ -1113,6 +1192,157 @@ window.deleteProduct = async function(id) {
 
     alert(
       "Unable to delete product:\n\n" +
+      (error.message || error)
+    );
+  }
+};
+
+
+/* =========================================================
+   DELETE ORDER
+========================================================= */
+
+window.deleteOrder = async function(orderId) {
+
+  const wantedId =
+    String(orderId || "").trim();
+
+  if (!wantedId) {
+
+    alert(
+      "Unable to identify this order."
+    );
+
+    return;
+  }
+
+
+  /* =======================================================
+     FIND ORDER
+  ======================================================= */
+
+  const order =
+    orders.find(item =>
+      String(item.id || "").trim() === wantedId
+    );
+
+  if (!order) {
+
+    alert(
+      "Unable to find this order."
+    );
+
+    return;
+  }
+
+
+  /* =======================================================
+     CONFIRM DELETE
+  ======================================================= */
+
+  const confirmed =
+    await showOrderDeleteConfirmation(
+      order
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    /* =====================================================
+       DELETE ORDER ITEMS FIRST
+    ===================================================== */
+
+    const {
+      error: itemsError
+    } =
+      await window.valarSupabase
+        .from("order_items")
+        .delete()
+        .eq("order_id", wantedId);
+
+    if (itemsError) {
+
+      console.error(
+        "Delete order items error:",
+        itemsError
+      );
+
+      alert(
+        "Unable to delete the order items:\n\n" +
+        itemsError.message
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       DELETE ORDER
+    ===================================================== */
+
+    const {
+      error: orderError
+    } =
+      await window.valarSupabase
+        .from("orders")
+        .delete()
+        .eq("id", wantedId);
+
+    if (orderError) {
+
+      console.error(
+        "Delete order error:",
+        orderError
+      );
+
+      alert(
+        "Unable to delete order:\n\n" +
+        orderError.message
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       REMOVE FROM LOCAL ARRAY
+    ===================================================== */
+
+    orders =
+      orders.filter(item =>
+        String(item.id || "").trim() !== wantedId
+      );
+
+
+    /* =====================================================
+       UPDATE DASHBOARD
+    ===================================================== */
+
+    render();
+
+
+    /* =====================================================
+       SUCCESS MESSAGE
+    ===================================================== */
+
+    showValarMessage(
+      "Order Deleted",
+      `Order ${order.order_number || ""} was deleted successfully.`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Delete order exception:",
+      error
+    );
+
+    alert(
+      "Unable to delete order:\n\n" +
       (error.message || error)
     );
   }
@@ -1424,18 +1654,10 @@ document.addEventListener(
             }
 
 
-            /* ===============================================
-               CLOSE PRODUCT FORM
-            =============================================== */
-
             closeModal();
 
             await load();
 
-
-            /* ===============================================
-               VALAR SUCCESS MODAL
-            =============================================== */
 
             showValarMessage(
               "Product Updated",
