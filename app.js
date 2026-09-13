@@ -1,6 +1,6 @@
 /* =========================================================
    VALAR CUSTOMER STORE
-   SUPABASE + ONEKHUSA PAYMENT VERSION
+   SUPABASE + ONEKHUSA PAYMENT + STOCK REQUESTS
 ========================================================= */
 
 let products = [];
@@ -10,6 +10,13 @@ let cart = JSON.parse(
 );
 
 let selectedCategory = "All";
+
+/*
+   Current quantity being requested from VALAR.
+   This is the ADDITIONAL quantity needed beyond
+   the currently available stock.
+*/
+let stockRequestQuantity = 1;
 
 
 /* =========================================================
@@ -167,6 +174,10 @@ async function loadProducts() {
         ? data
         : [];
 
+
+    /* -----------------------------------------------------
+       CLEAN INVALID CART ITEMS
+    ----------------------------------------------------- */
 
     cart =
       cart.filter(item => {
@@ -381,12 +392,15 @@ function renderProducts() {
               <button
                 class="add"
                 type="button"
-                ${soldOut ? "disabled" : ""}
-                onclick="addToCart('${escapeHtml(product.id)}')"
+                onclick="${
+                  soldOut
+                    ? `openStockRequestById('${escapeHtml(product.id)}')`
+                    : `addToCart('${escapeHtml(product.id)}')`
+                }"
               >
                 ${
                   soldOut
-                    ? "SOLD OUT"
+                    ? "REQUEST STOCK"
                     : "ADD TO CART"
                 }
               </button>
@@ -421,10 +435,15 @@ function addToCart(id) {
   }
 
 
+  /* -------------------------------------------------------
+     PRODUCT COMPLETELY SOLD OUT
+  ------------------------------------------------------- */
+
   if (Number(product.stock) <= 0) {
 
-    alert(
-      "This product is currently sold out."
+    openStockRequest(
+      product,
+      1
     );
 
     return;
@@ -439,27 +458,47 @@ function addToCart(id) {
     );
 
 
+  /* -------------------------------------------------------
+     EXISTING CART ITEM
+  ------------------------------------------------------- */
+
   if (existing) {
 
+    const nextQuantity =
+      Number(existing.qty) + 1;
+
+
+    /* ---------------------------------------------------
+       CUSTOMER HAS REACHED AVAILABLE STOCK
+    --------------------------------------------------- */
+
     if (
-      existing.qty <
+      nextQuantity >
       Number(product.stock)
     ) {
 
-      existing.qty++;
+      const extraQuantity =
+        nextQuantity -
+        Number(product.stock);
 
-    }
 
-    else {
-
-      alert(
-        "You cannot add more than the available stock."
+      openStockRequest(
+        product,
+        extraQuantity
       );
 
       return;
     }
 
+
+    existing.qty =
+      nextQuantity;
+
   }
+
+  /* -------------------------------------------------------
+     NEW CART ITEM
+  ------------------------------------------------------- */
 
   else {
 
@@ -559,8 +598,13 @@ function changeQty(id, amount) {
 
 
   const newQuantity =
-    item.qty + amount;
+    Number(item.qty) +
+    Number(amount);
 
+
+  /* =====================================================
+     REMOVE ITEM
+  ====================================================== */
 
   if (newQuantity <= 0) {
 
@@ -570,18 +614,44 @@ function changeQty(id, amount) {
   }
 
 
+  /* =====================================================
+     STOCK LIMIT REACHED
+  ====================================================== */
+
   if (
     newQuantity >
     Number(product.stock)
   ) {
 
-    alert(
-      "You have reached the available stock."
+    /*
+       Example:
+
+       Stock = 3
+       Cart = 3
+       Customer presses +
+
+       newQuantity = 4
+
+       Additional quantity requested = 1
+    */
+
+    const extraQuantity =
+      newQuantity -
+      Number(product.stock);
+
+
+    openStockRequest(
+      product,
+      extraQuantity
     );
 
     return;
   }
 
+
+  /* =====================================================
+     NORMAL QUANTITY CHANGE
+  ====================================================== */
 
   item.qty =
     newQuantity;
@@ -1063,6 +1133,713 @@ paymentMethod?.addEventListener(
   "change",
   updatePaymentInstructions
 );
+
+
+/* =========================================================
+   STOCK REQUEST
+========================================================= */
+
+
+/* =========================================================
+   OPEN STOCK REQUEST BY PRODUCT ID
+========================================================= */
+
+function openStockRequestById(id) {
+
+  const product =
+    products.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
+
+
+  if (!product) {
+    return;
+  }
+
+
+  openStockRequest(
+    product,
+    1
+  );
+
+}
+
+
+/* =========================================================
+   UPDATE STOCK REQUEST QUANTITY
+========================================================= */
+
+function updateStockRequestQuantity() {
+
+  const requestedQty =
+    document.getElementById(
+      "stockRequestRequestedQty"
+    );
+
+  const extraQty =
+    document.getElementById(
+      "stockRequestExtraQty"
+    );
+
+  const extraDisplay =
+    document.getElementById(
+      "stockRequestExtraDisplay"
+    );
+
+  const quantityDisplay =
+    document.getElementById(
+      "stockRequestQuantityDisplay"
+    );
+
+
+  stockRequestQuantity =
+    Math.max(
+      1,
+      Number(stockRequestQuantity) || 1
+    );
+
+
+  if (requestedQty) {
+
+    requestedQty.value =
+      stockRequestQuantity;
+
+  }
+
+
+  if (extraQty) {
+
+    extraQty.value =
+      stockRequestQuantity;
+
+  }
+
+
+  if (extraDisplay) {
+
+    extraDisplay.textContent =
+      stockRequestQuantity;
+
+  }
+
+
+  if (quantityDisplay) {
+
+    quantityDisplay.textContent =
+      stockRequestQuantity;
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN STOCK REQUEST
+========================================================= */
+
+function openStockRequest(
+  product,
+  initialQuantity = 1
+) {
+
+  const backdrop =
+    document.getElementById(
+      "stockRequestBackdrop"
+    );
+
+  const productId =
+    document.getElementById(
+      "stockRequestProductId"
+    );
+
+  const message =
+    document.getElementById(
+      "stockRequestMessage"
+    );
+
+  const result =
+    document.getElementById(
+      "stockRequestResult"
+    );
+
+
+  if (!backdrop || !product) {
+    return;
+  }
+
+
+  /*
+     Always start with at least 1.
+  */
+
+  stockRequestQuantity =
+    Math.max(
+      1,
+      Number(initialQuantity) || 1
+    );
+
+
+  if (productId) {
+
+    productId.value =
+      product.id;
+
+  }
+
+
+  if (message) {
+
+    const currentStock =
+      Number(product.stock) || 0;
+
+
+    message.textContent =
+      currentStock > 0
+
+        ? `${product.name} has ${currentStock} item(s) currently available. How many additional item(s) would you like to request?`
+
+        : `${product.name} is currently out of stock. How many item(s) would you like to request?`;
+
+  }
+
+
+  if (result) {
+
+    result.innerHTML =
+      "";
+
+  }
+
+
+  /* =====================================================
+     CREATE QUANTITY CONTROLS
+  ====================================================== */
+
+  let quantityControls =
+    document.getElementById(
+      "stockRequestQuantityControls"
+    );
+
+
+  if (!quantityControls) {
+
+    quantityControls =
+      document.createElement("div");
+
+    quantityControls.id =
+      "stockRequestQuantityControls";
+
+    quantityControls.style.cssText = `
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+      margin:16px 0;
+    `;
+
+
+    const minusButton =
+      document.createElement("button");
+
+    minusButton.id =
+      "stockRequestMinus";
+
+    minusButton.type =
+      "button";
+
+    minusButton.textContent =
+      "−";
+
+    minusButton.setAttribute(
+      "aria-label",
+      "Decrease requested quantity"
+    );
+
+    minusButton.style.cssText = `
+      width:44px;
+      height:44px;
+      border:1px solid currentColor;
+      border-radius:8px;
+      background:transparent;
+      font-size:24px;
+      font-weight:700;
+      cursor:pointer;
+    `;
+
+
+    const quantityDisplay =
+      document.createElement("strong");
+
+    quantityDisplay.id =
+      "stockRequestQuantityDisplay";
+
+    quantityDisplay.textContent =
+      "1";
+
+    quantityDisplay.style.cssText = `
+      min-width:35px;
+      text-align:center;
+      font-size:1.2rem;
+    `;
+
+
+    const plusButton =
+      document.createElement("button");
+
+    plusButton.id =
+      "stockRequestPlus";
+
+    plusButton.type =
+      "button";
+
+    plusButton.textContent =
+      "+";
+
+    plusButton.setAttribute(
+      "aria-label",
+      "Increase requested quantity"
+    );
+
+    plusButton.style.cssText = `
+      width:44px;
+      height:44px;
+      border:1px solid currentColor;
+      border-radius:8px;
+      background:transparent;
+      font-size:24px;
+      font-weight:700;
+      cursor:pointer;
+    `;
+
+
+    minusButton.addEventListener(
+      "click",
+      function () {
+
+        stockRequestQuantity =
+          Math.max(
+            1,
+            stockRequestQuantity - 1
+          );
+
+        updateStockRequestQuantity();
+
+      }
+    );
+
+
+    plusButton.addEventListener(
+      "click",
+      function () {
+
+        stockRequestQuantity += 1;
+
+        updateStockRequestQuantity();
+
+      }
+    );
+
+
+    quantityControls.appendChild(
+      minusButton
+    );
+
+    quantityControls.appendChild(
+      quantityDisplay
+    );
+
+    quantityControls.appendChild(
+      plusButton
+    );
+
+
+    /*
+       Put the controls above the form.
+    */
+
+    const form =
+      document.getElementById(
+        "stockRequestForm"
+      );
+
+
+    if (form) {
+
+      form.parentNode.insertBefore(
+        quantityControls,
+        form
+      );
+
+    }
+
+  }
+
+
+  updateStockRequestQuantity();
+
+
+  backdrop.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =========================================================
+   CLOSE STOCK REQUEST
+========================================================= */
+
+function closeStockRequest() {
+
+  document
+    .getElementById(
+      "stockRequestBackdrop"
+    )
+    ?.classList.remove("show");
+
+}
+
+
+document
+  .getElementById("closeStockRequest")
+  ?.addEventListener(
+    "click",
+    closeStockRequest
+  );
+
+
+document
+  .getElementById("stockRequestBackdrop")
+  ?.addEventListener(
+    "click",
+    event => {
+
+      const backdrop =
+        document.getElementById(
+          "stockRequestBackdrop"
+        );
+
+
+      if (
+        event.target ===
+        backdrop
+      ) {
+
+        closeStockRequest();
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+   SUBMIT STOCK REQUEST
+========================================================= */
+
+document
+  .getElementById("stockRequestForm")
+  ?.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      if (!window.valarSupabase) {
+
+        alert(
+          "VALAR store connection is not available."
+        );
+
+        return;
+
+      }
+
+
+      const nameInput =
+        document.getElementById(
+          "stockRequestName"
+        );
+
+      const phoneInput =
+        document.getElementById(
+          "stockRequestPhone"
+        );
+
+
+      const productId =
+        document.getElementById(
+          "stockRequestProductId"
+        )?.value;
+
+
+      /*
+         Always use the current quantity selector.
+      */
+
+      const requestedQuantity =
+        Math.max(
+          1,
+          Number(stockRequestQuantity) || 1
+        );
+
+
+      const extraQuantity =
+        requestedQuantity;
+
+
+      const customerName =
+        String(
+          nameInput?.value || ""
+        ).trim();
+
+
+      const phone =
+        String(
+          phoneInput?.value || ""
+        ).trim();
+
+
+      if (
+        !customerName ||
+        !phone ||
+        !productId ||
+        extraQuantity <= 0
+      ) {
+
+        alert(
+          "Please complete all fields."
+        );
+
+        return;
+
+      }
+
+
+      const product =
+        products.find(
+          item =>
+            String(item.id) ===
+            String(productId)
+        );
+
+
+      if (!product) {
+
+        alert(
+          "This product could not be found."
+        );
+
+        return;
+
+      }
+
+
+      const submitButton =
+        this.querySelector(
+          'button[type="submit"]'
+        );
+
+
+      if (submitButton) {
+
+        submitButton.disabled =
+          true;
+
+        submitButton.textContent =
+          "SENDING...";
+
+      }
+
+
+      try {
+
+        const {
+          error
+        } =
+          await window.valarSupabase
+            .from("stock_requests")
+            .insert({
+
+              product_id:
+                product.id,
+
+              product_name:
+                product.name,
+
+              customer_name:
+                customerName,
+
+              phone:
+                phone,
+
+              current_stock:
+                Number(product.stock) || 0,
+
+              requested_quantity:
+                requestedQuantity,
+
+              additional_quantity:
+                extraQuantity,
+
+              status:
+                "pending"
+
+            });
+
+
+        if (error) {
+
+          console.error(
+            "Stock request error:",
+            error
+          );
+
+          throw error;
+
+        }
+
+
+        /* =================================================
+           SUCCESS MESSAGE
+        ================================================== */
+
+        const result =
+          document.getElementById(
+            "stockRequestResult"
+          );
+
+
+        if (result) {
+
+          result.innerHTML = `
+
+            <strong>
+              Request sent successfully
+            </strong>
+
+            <p>
+              Your request for
+              <strong>
+                ${escapeHtml(
+                  String(requestedQuantity)
+                )}
+              </strong>
+              item(s) has been sent to VALAR.
+            </p>
+
+            <p>
+              We will contact you on
+              <strong>
+                ${escapeHtml(phone)}
+              </strong>
+              when the stock is available.
+            </p>
+
+          `;
+
+        }
+
+
+        /*
+           Clear customer fields after successful
+           submission, but keep the success message
+           visible.
+        */
+
+        if (nameInput) {
+          nameInput.value = "";
+        }
+
+        if (phoneInput) {
+          phoneInput.value = "";
+        }
+
+
+        /*
+           Reset request quantity back to 1
+           for the next request.
+        */
+
+        stockRequestQuantity = 1;
+
+        updateStockRequestQuantity();
+
+
+        /*
+           Keep the modal open so the customer
+           can clearly see the confirmation.
+        */
+
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Unable to send stock request:",
+          error
+        );
+
+
+        alert(
+          "We could not send your stock request. Please try again."
+        );
+
+      }
+
+      finally {
+
+        if (submitButton) {
+
+          /*
+             If the request succeeded, allow the
+             customer to close the modal rather than
+             immediately submitting another request.
+          */
+
+          const result =
+            document.getElementById(
+              "stockRequestResult"
+            );
+
+
+          const successful =
+            result &&
+            result.textContent.includes(
+              "Request sent successfully"
+            );
+
+
+          if (successful) {
+
+            submitButton.disabled =
+              true;
+
+            submitButton.textContent =
+              "REQUEST SENT";
+
+          }
+
+          else {
+
+            submitButton.disabled =
+              false;
+
+            submitButton.textContent =
+              "SEND REQUEST";
+
+          }
+
+        }
+
+      }
+
+    }
+  );
 
 
 /* =========================================================
@@ -1731,9 +2508,8 @@ checkoutForm?.addEventListener(
 
 
           /*
-             We intentionally DO NOT clear the cart yet.
-             The order is still pending until OneKhusa
-             confirms successful payment.
+             Do not clear the cart yet.
+             Payment is still pending.
           */
 
           return;
