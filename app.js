@@ -1,6 +1,6 @@
 /* =========================================================
    VALAR CUSTOMER STORE
-   SUPABASE + ONEKHUSA PAYMENT + STOCK REQUESTS
+   SUPABASE + PAYCHANGU PAYMENT + STOCK REQUESTS
 ========================================================= */
 
 let products = [];
@@ -623,18 +623,6 @@ function changeQty(id, amount) {
     Number(product.stock)
   ) {
 
-    /*
-       Example:
-
-       Stock = 3
-       Cart = 3
-       Customer presses +
-
-       newQuantity = 4
-
-       Additional quantity requested = 1
-    */
-
     const extraQuantity =
       newQuantity -
       Number(product.stock);
@@ -1070,7 +1058,7 @@ function updatePaymentInstructions() {
       "Airtel Money";
 
     paymentText.textContent =
-      "After placing your order, VALAR will generate your OneKhusa payment request.";
+      "You will be redirected to secure PayChangu checkout to complete your payment.";
 
   }
 
@@ -1083,7 +1071,23 @@ function updatePaymentInstructions() {
       "TNM Mpamba";
 
     paymentText.textContent =
-      "After placing your order, VALAR will generate your OneKhusa payment request.";
+      "You will be redirected to secure PayChangu checkout to complete your payment.";
+
+  }
+
+  else if (
+    method ===
+    "Visa Card"
+  ) {
+
+    paymentInstructions.hidden =
+      false;
+
+    paymentTitle.textContent =
+      "Visa Card";
+
+    paymentText.textContent =
+      "You will be redirected to secure PayChangu checkout to complete your card payment.";
 
   }
 
@@ -1100,22 +1104,6 @@ function updatePaymentInstructions() {
 
     paymentText.textContent =
       "Pay cash when your order is delivered or when you collect it.";
-
-  }
-
-  else if (
-    method ===
-    "Visa Card"
-  ) {
-
-    paymentInstructions.hidden =
-      false;
-
-    paymentTitle.textContent =
-      "Visa Card";
-
-    paymentText.textContent =
-      "Online Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or cash.";
 
   }
 
@@ -1269,10 +1257,6 @@ function openStockRequest(
     return;
   }
 
-
-  /*
-     Always start with at least 1.
-  */
 
   stockRequestQuantity =
     Math.max(
@@ -1455,10 +1439,6 @@ function openStockRequest(
     );
 
 
-    /*
-       Put the controls above the form.
-    */
-
     const form =
       document.getElementById(
         "stockRequestForm"
@@ -1575,10 +1555,6 @@ document
           "stockRequestProductId"
         )?.value;
 
-
-      /*
-         Always use the current quantity selector.
-      */
 
       const requestedQuantity =
         Math.max(
@@ -1703,10 +1679,6 @@ document
         }
 
 
-        /* =================================================
-           SUCCESS MESSAGE
-        ================================================== */
-
         const result =
           document.getElementById(
             "stockRequestResult"
@@ -1744,12 +1716,6 @@ document
         }
 
 
-        /*
-           Clear customer fields after successful
-           submission, but keep the success message
-           visible.
-        */
-
         if (nameInput) {
           nameInput.value = "";
         }
@@ -1759,21 +1725,9 @@ document
         }
 
 
-        /*
-           Reset request quantity back to 1
-           for the next request.
-        */
-
         stockRequestQuantity = 1;
 
         updateStockRequestQuantity();
-
-
-        /*
-           Keep the modal open so the customer
-           can clearly see the confirmation.
-        */
-
 
       }
 
@@ -1794,12 +1748,6 @@ document
       finally {
 
         if (submitButton) {
-
-          /*
-             If the request succeeded, allow the
-             customer to close the modal rather than
-             immediately submitting another request.
-          */
 
           const result =
             document.getElementById(
@@ -1870,6 +1818,14 @@ async function createValarOrder({
       : "pending";
 
 
+  const paymentProvider =
+    payment === "Airtel Money" ||
+    payment === "Mpamba" ||
+    payment === "Visa Card"
+      ? "PayChangu"
+      : null;
+
+
   const order = {
 
     order_number:
@@ -1891,12 +1847,7 @@ async function createValarOrder({
       paymentStatus,
 
     payment_provider:
-      (
-        payment === "Airtel Money" ||
-        payment === "Mpamba"
-      )
-        ? "OneKhusa"
-        : null,
+      paymentProvider,
 
     total:
       total
@@ -2010,17 +1961,37 @@ async function createValarOrder({
 
 
 /* =========================================================
-   START ONEKHUSA PAYMENT
+   START PAYCHANGU PAYMENT
 ========================================================= */
 
-async function startOneKhusaPayment(
-  orderNumber
-) {
+async function startPayChanguPayment({
+
+  orderNumber,
+  amount,
+  customerName
+
+}) {
 
   console.log(
-    "Starting OneKhusa payment:",
+    "Starting PayChangu payment:",
     orderNumber
   );
+
+
+  const nameParts =
+    String(customerName || "VALAR Customer")
+      .trim()
+      .split(/\s+/);
+
+
+  const firstName =
+    nameParts.shift() ||
+    "VALAR";
+
+
+  const lastName =
+    nameParts.join(" ") ||
+    "Customer";
 
 
   const response =
@@ -2038,8 +2009,22 @@ async function startOneKhusaPayment(
 
         body:
           JSON.stringify({
-            orderNumber:
+
+            amount:
+              amount,
+
+            email:
+              "customer@valar.com",
+
+            first_name:
+              firstName,
+
+            last_name:
+              lastName,
+
+            tx_ref:
               orderNumber
+
           })
 
       }
@@ -2064,7 +2049,7 @@ async function startOneKhusaPayment(
   catch {
 
     console.error(
-      "Invalid create-payment response:",
+      "Invalid PayChangu response:",
       responseText
     );
 
@@ -2076,15 +2061,17 @@ async function startOneKhusaPayment(
 
 
   console.log(
-    "OneKhusa response:",
+    "PayChangu response:",
     result
   );
 
 
-  if (
-    !response.ok ||
-    !result.success
-  ) {
+  if (!response.ok) {
+
+    console.error(
+      "PayChangu request failed:",
+      result
+    );
 
     throw new Error(
       result.error ||
@@ -2094,18 +2081,41 @@ async function startOneKhusaPayment(
   }
 
 
-  if (
-    !result.timedAccountNumber
-  ) {
+  /*
+     PayChangu Standard Checkout normally
+     returns the checkout URL inside data.
+  */
+
+  const checkoutUrl =
+    result?.data?.checkout_url ||
+    result?.checkout_url ||
+    result?.data?.checkoutUrl ||
+    result?.checkoutUrl;
+
+
+  if (!checkoutUrl) {
+
+    console.error(
+      "PayChangu checkout URL missing:",
+      result
+    );
 
     throw new Error(
-      "OneKhusa did not return a payment number."
+      "PAYCHANGU_CHECKOUT_URL_MISSING"
     );
 
   }
 
 
-  return result;
+  return {
+
+    checkoutUrl:
+      checkoutUrl,
+
+    response:
+      result
+
+  };
 
 }
 
@@ -2146,12 +2156,11 @@ function showOrderResult(
 
 
 /* =========================================================
-   SHOW ONEKHUSA PAYMENT DETAILS
+   SHOW PAYCHANGU START MESSAGE
 ========================================================= */
 
-function showOneKhusaPayment(
-  orderNumber,
-  result
+function showPayChanguPayment(
+  orderNumber
 ) {
 
   const orderResult =
@@ -2165,54 +2174,22 @@ function showOneKhusaPayment(
   }
 
 
-  const tan =
-    result.timedAccountNumber;
-
-
-  const expiry =
-    result.expiryInMinutes ||
-    15;
-
-
   orderResult.innerHTML = `
 
     <strong>
       Order ${escapeHtml(orderNumber)}
     </strong>
 
-    <p>
-      Your OneKhusa payment request has been created.
-    </p>
-
     <div class="payment-instructions">
 
-      <strong>
-        OneKhusa Payment Number
-      </strong>
-
-      <p
-        style="
-          font-size:1.35rem;
-          font-weight:800;
-          letter-spacing:1px;
-          margin:10px 0;
-        "
-      >
-        ${escapeHtml(tan)}
+      <p>
+        Your secure PayChangu payment checkout
+        is being prepared.
       </p>
 
       <p>
-        Use this payment number to complete your
-        ${escapeHtml(
-          paymentMethod?.value || "mobile money"
-        )}
-        payment.
-      </p>
-
-      <p>
-        This payment request expires in approximately
-        ${escapeHtml(expiry)}
-        minutes.
+        You will be redirected to PayChangu
+        to complete your payment.
       </p>
 
       <p>
@@ -2366,23 +2343,6 @@ checkoutForm?.addEventListener(
 
 
     /* -----------------------------------------------------
-       VISA
-    ----------------------------------------------------- */
-
-    if (
-      payment ===
-      "Visa Card"
-    ) {
-
-      alert(
-        "Visa Card payment is not connected yet. Please choose Airtel Money, TNM Mpamba, or Cash on delivery / pickup."
-      );
-
-      return;
-    }
-
-
-    /* -----------------------------------------------------
        MOBILE MONEY NUMBER
     ----------------------------------------------------- */
 
@@ -2433,7 +2393,8 @@ checkoutForm?.addEventListener(
       submitButton.textContent =
         (
           payment === "Airtel Money" ||
-          payment === "Mpamba"
+          payment === "Mpamba" ||
+          payment === "Visa Card"
         )
           ? "STARTING PAYMENT..."
           : "PLACING ORDER...";
@@ -2473,27 +2434,41 @@ checkoutForm?.addEventListener(
 
 
       /* ---------------------------------------------------
-         MOBILE MONEY
+         PAYCHANGU ONLINE PAYMENT
       --------------------------------------------------- */
 
       if (
         payment === "Airtel Money" ||
-        payment === "Mpamba"
+        payment === "Mpamba" ||
+        payment === "Visa Card"
       ) {
 
-        showOrderResult(
-          orderNumber,
-          "Creating your secure OneKhusa payment request..."
+        showPayChanguPayment(
+          orderNumber
         );
 
 
         try {
 
           const paymentResult =
-            await startOneKhusaPayment(
-              orderNumber
-            );
+            await startPayChanguPayment({
 
+              orderNumber:
+                orderNumber,
+
+              amount:
+                total,
+
+              customerName:
+                customerName
+
+            });
+
+
+          /*
+             Save the order number before
+             redirecting to PayChangu.
+          */
 
           localStorage.setItem(
             "valarPendingPaymentOrder",
@@ -2501,16 +2476,23 @@ checkoutForm?.addEventListener(
           );
 
 
-          showOneKhusaPayment(
-            orderNumber,
-            paymentResult
+          /*
+             Save the checkout URL as well.
+          */
+
+          localStorage.setItem(
+            "valarPayChanguCheckoutUrl",
+            paymentResult.checkoutUrl
           );
 
 
           /*
-             Do not clear the cart yet.
-             Payment is still pending.
+             Redirect customer to PayChangu.
           */
+
+          window.location.href =
+            paymentResult.checkoutUrl;
+
 
           return;
 
@@ -2519,13 +2501,13 @@ checkoutForm?.addEventListener(
         catch (paymentError) {
 
           console.error(
-            "OneKhusa start error:",
+            "PayChangu start error:",
             paymentError
           );
 
 
           alert(
-            "Your order was created, but we could not start the OneKhusa payment. Please keep your order number: " +
+            "Your order was created, but we could not start the PayChangu payment. Please keep your order number: " +
             orderNumber
           );
 
