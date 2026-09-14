@@ -1,6 +1,6 @@
 /* =========================================================
    VALAR CUSTOMER STORE
-   SUPABASE + PAYCHANGU PAYMENT + STOCK REQUESTS
+   SUPABASE + CASH ON DELIVERY / PICKUP + STOCK REQUESTS
 ========================================================= */
 
 let products = [];
@@ -17,14 +17,6 @@ let selectedCategory = "All";
    the currently available stock.
 */
 let stockRequestQuantity = 1;
-
-
-/* =========================================================
-   CONFIGURATION
-========================================================= */
-
-const CREATE_PAYMENT_FUNCTION =
-  "https://ppjhtybunodezwwufxia.supabase.co/functions/v1/create-payment";
 
 
 /* =========================================================
@@ -926,13 +918,70 @@ function openCheckout() {
   }
 
 
-  document
-    .getElementById("checkoutTotal")
-    ?.replaceChildren(
-      document.createTextNode(
-        money(cartTotal())
-      )
+  const checkoutTotalElement =
+    document.getElementById(
+      "checkoutTotal"
     );
+
+
+  if (checkoutTotalElement) {
+
+    checkoutTotalElement.textContent =
+      money(cartTotal());
+
+  }
+
+
+  /*
+     Clear any previous order confirmation
+     when opening a new checkout.
+  */
+
+  const orderResult =
+    document.getElementById(
+      "orderResult"
+    );
+
+
+  if (orderResult) {
+
+    orderResult.innerHTML =
+      "";
+
+  }
+
+
+  const submitButton =
+    document.querySelector(
+      '#checkoutForm button[type="submit"]'
+    );
+
+
+  if (submitButton) {
+
+    submitButton.disabled =
+      false;
+
+    submitButton.textContent =
+      "PLACE ORDER";
+
+  }
+
+
+  /*
+     Set the payment method back to
+     Cash on delivery / pickup.
+  */
+
+  if (paymentMethod) {
+
+    paymentMethod.value =
+      "Cash on delivery / pickup";
+
+  }
+
+
+  updatePaymentInstructions();
 
 
   closeCart();
@@ -984,6 +1033,7 @@ checkoutBackdrop?.addEventListener(
 
 /* =========================================================
    PAYMENT UI
+   CASH ONLY
 ========================================================= */
 
 const paymentMethod =
@@ -1006,16 +1056,6 @@ const paymentText =
     "paymentText"
   );
 
-const mobileMoneyFields =
-  document.getElementById(
-    "mobileMoneyFields"
-  );
-
-const mobileMoneyPhone =
-  document.getElementById(
-    "mobileMoneyPhone"
-  );
-
 
 function updatePaymentInstructions() {
 
@@ -1023,75 +1063,12 @@ function updatePaymentInstructions() {
     paymentMethod?.value || "";
 
 
-  const mobile =
-    method === "Airtel Money" ||
-    method === "Mpamba";
-
-
-  if (mobileMoneyFields) {
-
-    mobileMoneyFields.hidden =
-      !mobile;
-
-  }
-
-
-  if (mobileMoneyPhone) {
-
-    mobileMoneyPhone.required =
-      mobile;
-
-  }
-
-
   if (!paymentInstructions) {
     return;
   }
 
 
-  if (method === "Airtel Money") {
-
-    paymentInstructions.hidden =
-      false;
-
-    paymentTitle.textContent =
-      "Airtel Money";
-
-    paymentText.textContent =
-      "You will be redirected to secure PayChangu checkout to complete your payment.";
-
-  }
-
-  else if (method === "Mpamba") {
-
-    paymentInstructions.hidden =
-      false;
-
-    paymentTitle.textContent =
-      "TNM Mpamba";
-
-    paymentText.textContent =
-      "You will be redirected to secure PayChangu checkout to complete your payment.";
-
-  }
-
-  else if (
-    method ===
-    "Visa Card"
-  ) {
-
-    paymentInstructions.hidden =
-      false;
-
-    paymentTitle.textContent =
-      "Visa Card";
-
-    paymentText.textContent =
-      "You will be redirected to secure PayChangu checkout to complete your card payment.";
-
-  }
-
-  else if (
+  if (
     method ===
     "Cash on delivery / pickup"
   ) {
@@ -1099,20 +1076,30 @@ function updatePaymentInstructions() {
     paymentInstructions.hidden =
       false;
 
-    paymentTitle.textContent =
-      "Cash payment";
 
-    paymentText.textContent =
-      "Pay cash when your order is delivered or when you collect it.";
+    if (paymentTitle) {
+
+      paymentTitle.textContent =
+        "Cash payment";
+
+    }
+
+
+    if (paymentText) {
+
+      paymentText.textContent =
+        "Pay cash when your order is delivered or when you collect it.";
+
+    }
+
+
+    return;
 
   }
 
-  else {
 
-    paymentInstructions.hidden =
-      true;
-
-  }
+  paymentInstructions.hidden =
+    true;
 
 }
 
@@ -1791,7 +1778,7 @@ document
 
 
 /* =========================================================
-   CREATE ORDER
+   CREATE CASH ORDER
 ========================================================= */
 
 async function createValarOrder({
@@ -1799,31 +1786,24 @@ async function createValarOrder({
   customerName,
   phone,
   location,
-  payment,
   total
 
 }) {
+
+  /*
+     VALAR currently accepts only:
+     Cash on delivery / pickup
+  */
+
+  const payment =
+    "Cash on delivery / pickup";
+
 
   const orderNumber =
     "VALAR-" +
     Date.now()
       .toString()
       .slice(-8);
-
-
-  const paymentStatus =
-    payment ===
-      "Cash on delivery / pickup"
-      ? "cash_pending"
-      : "pending";
-
-
-  const paymentProvider =
-    payment === "Airtel Money" ||
-    payment === "Mpamba" ||
-    payment === "Visa Card"
-      ? "PayChangu"
-      : null;
 
 
   const order = {
@@ -1844,10 +1824,10 @@ async function createValarOrder({
       payment,
 
     payment_status:
-      paymentStatus,
+      "cash_pending",
 
     payment_provider:
-      paymentProvider,
+      null,
 
     total:
       total
@@ -1891,6 +1871,11 @@ async function createValarOrder({
         );
 
 
+      if (!product) {
+        return null;
+      }
+
+
       return {
 
         order_id:
@@ -1920,7 +1905,26 @@ async function createValarOrder({
 
       };
 
-    });
+    })
+    .filter(Boolean);
+
+
+  if (!orderItems.length) {
+
+    await window.valarSupabase
+      .from("orders")
+      .delete()
+      .eq(
+        "id",
+        createdOrder.id
+      );
+
+
+    throw new Error(
+      "NO_ORDER_ITEMS"
+    );
+
+  }
 
 
   const {
@@ -1939,6 +1943,11 @@ async function createValarOrder({
     );
 
 
+    /*
+       Remove the parent order if the
+       order items could not be created.
+    */
+
     await window.valarSupabase
       .from("orders")
       .delete()
@@ -1956,166 +1965,6 @@ async function createValarOrder({
 
 
   return createdOrder;
-
-}
-
-
-/* =========================================================
-   START PAYCHANGU PAYMENT
-========================================================= */
-
-async function startPayChanguPayment({
-
-  orderNumber,
-  amount,
-  customerName
-
-}) {
-
-  console.log(
-    "Starting PayChangu payment:",
-    orderNumber
-  );
-
-
-  const nameParts =
-    String(customerName || "VALAR Customer")
-      .trim()
-      .split(/\s+/);
-
-
-  const firstName =
-    nameParts.shift() ||
-    "VALAR";
-
-
-  const lastName =
-    nameParts.join(" ") ||
-    "Customer";
-
-
-  const response =
-    await fetch(
-      CREATE_PAYMENT_FUNCTION,
-      {
-
-        method:
-          "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
-
-        body:
-          JSON.stringify({
-
-            amount:
-              amount,
-
-            email:
-              "customer@valar.com",
-
-            first_name:
-              firstName,
-
-            last_name:
-              lastName,
-
-            tx_ref:
-              orderNumber
-
-          })
-
-      }
-    );
-
-
-  const responseText =
-    await response.text();
-
-
-  let result;
-
-  try {
-
-    result =
-      JSON.parse(
-        responseText
-      );
-
-  }
-
-  catch {
-
-    console.error(
-      "Invalid PayChangu response:",
-      responseText
-    );
-
-    throw new Error(
-      "PAYMENT_FUNCTION_INVALID_RESPONSE"
-    );
-
-  }
-
-
-  console.log(
-    "PayChangu response:",
-    result
-  );
-
-
-  if (!response.ok) {
-
-    console.error(
-      "PayChangu request failed:",
-      result
-    );
-
-    throw new Error(
-      result.error ||
-      "PAYMENT_INITIALIZATION_FAILED"
-    );
-
-  }
-
-
-  /*
-     PayChangu Standard Checkout normally
-     returns the checkout URL inside data.
-  */
-
-  const checkoutUrl =
-    result?.data?.checkout_url ||
-    result?.checkout_url ||
-    result?.data?.checkoutUrl ||
-    result?.checkoutUrl;
-
-
-  if (!checkoutUrl) {
-
-    console.error(
-      "PayChangu checkout URL missing:",
-      result
-    );
-
-    throw new Error(
-      "PAYCHANGU_CHECKOUT_URL_MISSING"
-    );
-
-  }
-
-
-  return {
-
-    checkoutUrl:
-      checkoutUrl,
-
-    response:
-      result
-
-  };
 
 }
 
@@ -2149,57 +1998,6 @@ function showOrderResult(
     <br>
 
     ${escapeHtml(message)}
-
-  `;
-
-}
-
-
-/* =========================================================
-   SHOW PAYCHANGU START MESSAGE
-========================================================= */
-
-function showPayChanguPayment(
-  orderNumber
-) {
-
-  const orderResult =
-    document.getElementById(
-      "orderResult"
-    );
-
-
-  if (!orderResult) {
-    return;
-  }
-
-
-  orderResult.innerHTML = `
-
-    <strong>
-      Order ${escapeHtml(orderNumber)}
-    </strong>
-
-    <div class="payment-instructions">
-
-      <p>
-        Your secure PayChangu payment checkout
-        is being prepared.
-      </p>
-
-      <p>
-        You will be redirected to PayChangu
-        to complete your payment.
-      </p>
-
-      <p>
-        Keep your order number:
-        <strong>
-          ${escapeHtml(orderNumber)}
-        </strong>
-      </p>
-
-    </div>
 
   `;
 
@@ -2319,13 +2117,9 @@ checkoutForm?.addEventListener(
       ).trim();
 
 
-    const mobileNumber =
-      String(
-        formData.get(
-          "mobileMoneyPhone"
-        ) || ""
-      ).trim();
-
+    /* -----------------------------------------------------
+       BASIC VALIDATION
+    ----------------------------------------------------- */
 
     if (
       !customerName ||
@@ -2342,23 +2136,23 @@ checkoutForm?.addEventListener(
     }
 
 
-    /* -----------------------------------------------------
-       MOBILE MONEY NUMBER
-    ----------------------------------------------------- */
+    /*
+       Extra safety:
+       only Cash on delivery / pickup
+       is accepted at the moment.
+    */
 
     if (
-      (
-        payment === "Airtel Money" ||
-        payment === "Mpamba"
-      ) &&
-      !mobileNumber
+      payment !==
+      "Cash on delivery / pickup"
     ) {
 
       alert(
-        "Please enter your mobile-money number."
+        "Please select Cash on delivery / pickup."
       );
 
       return;
+
     }
 
 
@@ -2391,13 +2185,7 @@ checkoutForm?.addEventListener(
         true;
 
       submitButton.textContent =
-        (
-          payment === "Airtel Money" ||
-          payment === "Mpamba" ||
-          payment === "Visa Card"
-        )
-          ? "STARTING PAYMENT..."
-          : "PLACING ORDER...";
+        "PLACING ORDER...";
 
     }
 
@@ -2405,7 +2193,7 @@ checkoutForm?.addEventListener(
     try {
 
       /* ---------------------------------------------------
-         CREATE ORDER
+         CREATE CASH ORDER
       --------------------------------------------------- */
 
       const createdOrder =
@@ -2420,9 +2208,6 @@ checkoutForm?.addEventListener(
           location:
             location,
 
-          payment:
-            payment,
-
           total:
             total
 
@@ -2434,134 +2219,94 @@ checkoutForm?.addEventListener(
 
 
       /* ---------------------------------------------------
-         PAYCHANGU ONLINE PAYMENT
+         SHOW CASH ORDER CONFIRMATION
       --------------------------------------------------- */
 
-      if (
-        payment === "Airtel Money" ||
-        payment === "Mpamba" ||
-        payment === "Visa Card"
-      ) {
-
-        showPayChanguPayment(
-          orderNumber
+      const orderResult =
+        document.getElementById(
+          "orderResult"
         );
 
 
-        try {
+      if (orderResult) {
 
-          const paymentResult =
-            await startPayChanguPayment({
+        orderResult.innerHTML = `
 
-              orderNumber:
-                orderNumber,
+          <div class="payment-instructions">
 
-              amount:
-                total,
+            <strong>
+              Order ${escapeHtml(orderNumber)} received.
+            </strong>
 
-              customerName:
-                customerName
+            <p>
+              Please keep this number for reference.
+            </p>
 
-            });
+            <p>
+              Pay cash when your order is delivered
+              or when you collect it.
+            </p>
 
+          </div>
 
-          /*
-             Save the order number before
-             redirecting to PayChangu.
-          */
-
-          localStorage.setItem(
-            "valarPendingPaymentOrder",
-            orderNumber
-          );
-
-
-          /*
-             Save the checkout URL as well.
-          */
-
-          localStorage.setItem(
-            "valarPayChanguCheckoutUrl",
-            paymentResult.checkoutUrl
-          );
-
-
-          /*
-             Redirect customer to PayChangu.
-          */
-
-          window.location.href =
-            paymentResult.checkoutUrl;
-
-
-          return;
-
-        }
-
-        catch (paymentError) {
-
-          console.error(
-            "PayChangu start error:",
-            paymentError
-          );
-
-
-          alert(
-            "Your order was created, but we could not start the PayChangu payment. Please keep your order number: " +
-            orderNumber
-          );
-
-
-          showOrderResult(
-            orderNumber,
-            "Payment could not be started. Keep this order number and contact VALAR."
-          );
-
-
-          return;
-
-        }
+        `;
 
       }
 
 
       /* ---------------------------------------------------
-         CASH
+         CLEAR SHOPPING CART
       --------------------------------------------------- */
 
-      if (
-        payment ===
-        "Cash on delivery / pickup"
-      ) {
+      cart = [];
 
-        showOrderResult(
-          orderNumber,
-          "Pay cash when your order is delivered or collected."
-        );
+      saveCart();
 
 
-        cart = [];
+      /* ---------------------------------------------------
+         RESET CHECKOUT FORM
+      --------------------------------------------------- */
 
-        saveCart();
-
-
-        this.reset();
-
-        updatePaymentInstructions();
-
-        closeCheckout();
+      this.reset();
 
 
-        alert(
-          "Order " +
-          orderNumber +
-          " received. Please keep this number for reference."
-        );
+      /*
+         The payment select is now reset to
+         "Choose payment", but the order
+         confirmation remains visible below.
+      */
 
+      if (paymentInstructions) {
 
-        return;
+        paymentInstructions.hidden =
+          true;
 
       }
+
+
+      /* ---------------------------------------------------
+         KEEP CONFIRMATION VISIBLE
+      --------------------------------------------------- */
+
+      if (submitButton) {
+
+        submitButton.disabled =
+          true;
+
+        submitButton.textContent =
+          "ORDER RECEIVED";
+
+      }
+
+
+      /*
+         IMPORTANT:
+         Do NOT close the checkout modal.
+         The customer needs to see the
+         order confirmation.
+      */
+
+      return;
 
     }
 
@@ -2581,7 +2326,16 @@ checkoutForm?.addEventListener(
 
     finally {
 
-      if (submitButton) {
+      /*
+         Do not reset the successful
+         confirmation button.
+      */
+
+      if (
+        submitButton &&
+        submitButton.textContent !==
+          "ORDER RECEIVED"
+      ) {
 
         submitButton.disabled =
           false;
