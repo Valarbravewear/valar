@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="VALAR — Brave & Wear. Shop VALAR clothing online in Malawi.">
+  <title>VALAR | Brave & Wear</title>
+  <link
+    rel="stylesheet"
+    href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com">
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+<header class="topbar">
+    <a
+      class="brand"
+      href="#shop"
+      aria-label="VALAR home">
+      <span class="brand-mark">
+        <img
+          src="valar-logo-dark.jpg"
+          alt="VALAR">
+      </span>
+      <span>
+
+        <strong>
+          VALAR
+        </strong>
+
+        <small>
+          BRAVE &amp; WEAR
+        </small>
+
+      </span>
+
+    </a>
+
+
+    <!-- CART BUTTON -->
+
+    <button
+      class="cart-button"
+      id="openCart"
+      type="button"
+      aria-label="Open shopping cart"
+    >
+
+      Cart
+
+      <span id="cartCount">
+        0
+      </span>
+
+    </button>
+
+  </header>
+
+
+
+  <!-- =========================================================
+       SHOP
+  ========================================================= -->
+
+  <section
+    class="section shop"
+    id="shop"
+  >
+
+    <div class="section-head">
+
+
+      <!-- SHOP TITLE -->
+
+      <div>
+
+        <p class="eyebrow">
+          THE COLLECTION
+        </p>
+
+        <h2>
+          SHOP VALAR
+        </h2>
+
+      </div>
+
+
+      <!-- PRODUCT FILTERS -->
+
+      <div
+        class="filters"
+        id="filters"
+      ></div>
+
+
+    </div>
+
+
+    <!-- PRODUCT GRID -->
+
+    <div
+      class="product-grid"
+      id="productGrid"
+    >
+
+      <div class="loading">
+        Loading the collection…
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================================================
+       ABOUT VALAR
+  ========================================================= -->
+
+  <section
+    class="about section"
+    id="about"
+  >
+
+
+    <!-- ABOUT IMAGE -->
+
+    <div class="about-image">
+
+      <img
+        src="valar-logo-dark.jpg"
+        alt="VALAR"
+      >
+
+    </div>
+
+
+    <!-- ABOUT CONTENT -->
+
+    <div class="about-content">
+
+      <h2>
+        BRAVE &amp; WEAR
+      </h2>
+
+
+      <p>
+        VALAR is a Malawi clothing brand built for
+        those who value confidence, individuality and
+        bold everyday style.
+      </p>
+
+
+      <p>
+        Follow us and Contact us for more drops,
+        updates and inspiration.
+      </p>
+
+
+
+      <!-- =====================================================
+           SOCIAL LINKS
+      ====================================================== -->
+
+      <div class="social-links">
+
+
+        <!-- FACEBOOK -->
+
+        <a
+          href="https://www.facebook.com/share/1F6qUHohTV/"
+          class="social-button facebook"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Visit VALAR on Facebook"
+        >
+          Facebook
+        </a>
+
+
+
+        <!-- INSTAGRAM -->
+
+        <a
+          href="https://www.instagram.com/valar01200431/"
+          class="social-button instagram"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Visit VALAR on Instagram"
+        >
+          Instagram
+        </a>
+
+
+
+        <!-- WHATSAPP -->
+
+        <a
+          href="https://wa.me/265881043398"
+          class="social-button whatsapp"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Contact VALAR on WhatsApp"
+        >
+          WhatsApp
+        </a>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================================================
+       FOOTER
+  ========================================================= -->
+
+  <footer class="site-footer">
+
+
+    <!-- BRAND -->
+
+    <div class="footer-brand">
+
+      <strong>
+        VALAR
+      </strong>
+
+      <p>
+        Brave &amp; Wear.
+      </p>
+
+    </div>
+
+
+
+    <!-- COPYRIGHT -->
+
+    <div class="footer-bottom">
+
+      <p>
+        © <span id="year"></span> VALAR.
+        All rights reserved.
+      </p>
+
+    </div>
+
+
+
+    <!-- SUBTLE ADMIN ACCESS -->
+
+    <a
+      href="admin-login.html"
+      class="hidden-admin-link"
+      aria-label="Admin Login"
+    >
+      Admin
+    </a>
+
+
+  </footer>
+
+
+
+  <!-- =========================================================
+       CART BACKDROP
+  ========================================================= -->
+
+  <div
+    class="drawer-backdrop"
+    id="drawerBackdrop"
+  ></div>
+
+
+
+  <!-- =========================================================
+       CART DRAWER
+  ========================================================= -->
+
+  <aside
+    class="cart-drawer"
+    id="cartDrawer"
+    aria-label="Shopping cart"
+  >
+
+
+    <!-- DRAWER HEADER -->
+
+    <div class="drawer-head">
+
+      <h2>
+        Your Cart
+      </h2>
+
+
+      <button
+        id="closeCart"
+        class="icon-button"
+        type="button"
+        aria-label="Close cart"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+
+    <!-- CART ITEMS -->
+
+    <div
+      id="cartItems"
+      class="cart-items"
+    ></div>
+
+
+
+    <!-- CART TOTAL -->
+
+    <div class="cart-bottom">
+
+      <div class="total-row">
+
+        <span>
+          Subtotal
+        </span>
+
+        <strong id="cartTotal">
+          MWK 0
+        </strong>
+
+      </div>
+
+
+      <button
+        class="button button-dark full"
+        id="checkoutButton"
+        type="button"
+      >
+        CHECKOUT
+      </button>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- =========================================================
+       CHECKOUT MODAL
+  ========================================================= -->
+
+  <div
+    class="modal-backdrop"
+    id="checkoutBackdrop"
+  >
+
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkoutTitle"
+    >
+
+
+      <!-- CLOSE -->
+
+      <button
+        id="closeCheckout"
+        class="modal-close"
+        type="button"
+        aria-label="Close checkout"
+      >
+        ×
+      </button>
+
+
+
+      <!-- CHECKOUT HEADER -->
+
+      <p class="eyebrow">
+        VALAR CHECKOUT
+      </p>
+
+
+      <h2 id="checkoutTitle">
+        Complete your order
+      </h2>
+
+
+
+      <!-- =====================================================
+           CHECKOUT FORM
+      ====================================================== -->
+
+      <form id="checkoutForm">
+
+
+        <!-- FULL NAME -->
+
+        <label>
+
+          Full name
+
+          <input
+            required
+            name="name"
+            type="text"
+            autocomplete="name"
+            placeholder="Your full name"
+          >
+
+        </label>
+
+
+
+        <!-- PHONE -->
+
+        <label>
+
+          Phone number
+
+          <input
+            required
+            name="phone"
+            type="tel"
+            placeholder="+265xxxxxxxxx"
+            autocomplete="tel"
+          >
+
+        </label>
+
+
+
+        <!-- DELIVERY LOCATION -->
+
+        <label>
+
+          Delivery location
+
+          <textarea
+            required
+            name="location"
+            rows="2"
+            placeholder="District/Area/Description"
+          ></textarea>
+
+        </label>
+
+
+
+        <!-- ===================================================
+             PAYMENT METHOD
+        ==================================================== -->
+
+        <label>
+
+          Payment method
+
+          <select
+            required
+            name="payment"
+            id="paymentMethod"
+          >
+
+            <option
+              value=""
+              selected
+              disabled
+            >
+              Choose payment
+            </option>
+
+
+            <option value="Cash on delivery / pickup">
+              Cash on delivery / pickup
+            </option>
+
+          </select>
+
+        </label>
+
+
+
+        <!-- ===================================================
+             MOBILE MONEY NUMBER
+        ==================================================== -->
+
+        <div
+          id="mobileMoneyFields"
+          hidden
+        >
+
+          <label>
+
+            Mobile Money number
+
+            <input
+              type="tel"
+              id="mobileMoneyPhone"
+              name="mobileMoneyPhone"
+              placeholder="+265xxxxxxxxx"
+              autocomplete="tel"
+            >
+
+          </label>
+
+
+          <p class="small-note">
+
+            Enter the Airtel Money or TNM Mpamba number
+            that will be used for this payment.
+
+          </p>
+
+        </div>
+
+
+
+        <!-- ===================================================
+             PAYMENT INSTRUCTIONS
+        ==================================================== -->
+
+        <div
+          id="paymentInstructions"
+          class="payment-instructions"
+          hidden
+        >
+
+          <strong id="paymentTitle">
+            Payment
+          </strong>
+
+
+          <p id="paymentText"></p>
+
+        </div>
+
+
+
+        <!-- ===================================================
+             CHECKOUT TOTAL
+        ==================================================== -->
+
+        <div class="checkout-summary">
+
+          <span>
+            Total
+          </span>
+
+          <strong id="checkoutTotal">
+            MWK 0
+          </strong>
+
+        </div>
+
+
+
+        <!-- ===================================================
+             PLACE ORDER
+        ==================================================== -->
+
+        <button
+          class="button button-dark full"
+          type="submit"
+        >
+          PLACE ORDER
+        </button>
+
+
+        <p class="small-note">
+
+        Payments are securely processed through our payment provider. VALAR will never ask for your PIN or password.
+        </p>
+
+      </form>
+
+
+
+      <!-- =====================================================
+           ORDER RESULT
+      ====================================================== -->
+
+      <div
+        id="orderResult"
+        class="order-result"
+      ></div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       STOCK REQUEST MODAL
+  ========================================================= -->
+
+  <div
+    class="modal-backdrop"
+    id="stockRequestBackdrop"
+  >
+
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+    >
+
+
+      <!-- CLOSE -->
+
+      <button
+        id="closeStockRequest"
+        class="modal-close"
+        type="button"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+
+
+      <p class="eyebrow">
+        VALAR STOCK REQUEST
+      </p>
+
+
+      <h2>
+        Need more stock?
+      </h2>
+
+
+      <p id="stockRequestMessage">
+        This product is currently limited.
+      </p>
+
+
+
+      <!-- STOCK REQUEST FORM -->
+
+      <form id="stockRequestForm">
+
+
+        <input
+          type="hidden"
+          id="stockRequestProductId"
+        >
+
+
+        <input
+          type="hidden"
+          id="stockRequestRequestedQty"
+        >
+
+
+        <input
+          type="hidden"
+          id="stockRequestExtraQty"
+        >
+
+
+
+        <!-- NAME -->
+
+        <label>
+
+          Full name
+
+          <input
+            required
+            type="text"
+            id="stockRequestName"
+            placeholder="Your name"
+            autocomplete="name"
+          >
+
+        </label>
+
+
+
+        <!-- PHONE -->
+
+        <label>
+
+          Phone number
+
+          <input
+            required
+            type="tel"
+            id="stockRequestPhone"
+            placeholder="+265xxxxxxxxx"
+            autocomplete="tel"
+          >
+
+        </label>
+
+
+
+        <!-- EXTRA QUANTITY -->
+
+        <div class="checkout-summary">
+
+          <span>
+            Additional items requested
+          </span>
+
+          <strong id="stockRequestExtraDisplay">
+            0
+          </strong>
+
+        </div>
+
+
+
+        <!-- SEND REQUEST -->
+
+        <button
+          class="button button-dark full"
+          type="submit"
+        >
+          SEND REQUEST
+        </button>
+
+
+      </form>
+
+
+
+      <!-- STOCK REQUEST RESULT -->
+
+      <div
+        id="stockRequestResult"
+        class="order-result"
+      ></div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =========================================================
+       APPLICATION JAVASCRIPT
+       CACHE-BUSTING VERSION
+  ========================================================= -->
+
+  <script src="app.js?v=20260921"></script>
+
+
+</body>
+
+</html>

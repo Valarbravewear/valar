@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>VALAR Admin Dashboard</title>
+
+  <link
+    rel="stylesheet"
+    href="admin.css"
+  >
+
+  <!-- Supabase -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <!-- VALAR Supabase configuration -->
+  <script src="config.js"></script>
+
+</head>
+
+
+<body>
+
+<div class="admin-shell">
+
+
+  <!-- =====================================================
+       SIDEBAR
+  ====================================================== -->
+
+  <aside class="admin-sidebar">
+
+    <div class="admin-brand">
+
+      VALAR
+
+      <small>
+        ADMIN
+      </small>
+
+    </div>
+
+
+    <nav class="admin-nav">
+
+      <a
+        class="active"
+        href="admin.html"
+      >
+        Dashboard
+      </a>
+
+      <a href="#products">
+        Products
+      </a>
+
+      <a href="#stock-requests">
+        Stock Requests
+      </a>
+
+      <a href="#orders">
+        Orders
+      </a>
+
+    </nav>
+
+
+    <button
+      type="button"
+      id="logout"
+      class="logout-button"
+    >
+      Logout
+    </button>
+
+  </aside>
+
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <main class="admin-main">
+
+
+    <!-- ===================================================
+         HEADER
+    ==================================================== -->
+
+    <header class="admin-header">
+
+      <div>
+
+        <p class="eyebrow">
+          BRAVE &amp; WEAR
+        </p>
+
+        <h1>
+          Dashboard
+        </h1>
+
+      </div>
+
+
+      <span
+        id="adminEmail"
+        class="admin-email"
+      ></span>
+
+    </header>
+
+
+
+    <!-- ===================================================
+         DASHBOARD STATS
+    ==================================================== -->
+
+    <section class="stats">
+
+      <div class="stat-card">
+
+        <span>
+          Products
+        </span>
+
+        <strong id="productCount">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Orders
+        </span>
+
+        <strong id="orderCount">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Stock Requests
+        </span>
+
+        <strong id="stockRequestCount">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Sales
+        </span>
+
+        <strong id="salesTotal">
+          MWK 0
+        </strong>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         PRODUCTS
+    ==================================================== -->
+
+    <section
+      id="products"
+      class="admin-section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <p class="eyebrow">
+            INVENTORY
+          </p>
+
+          <h2>
+            Products
+          </h2>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="primary"
+          id="newProduct"
+        >
+          + ADD PRODUCT
+        </button>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Name
+              </th>
+
+              <th>
+                Category
+              </th>
+
+              <th>
+                Price
+              </th>
+
+              <th>
+                Stock
+              </th>
+
+              <th>
+                Active
+              </th>
+
+              <th>
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="productsBody">
+
+            <tr>
+
+              <td
+                colspan="6"
+                class="empty-state"
+              >
+                Loading products…
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         STOCK REQUESTS
+    ==================================================== -->
+
+    <section
+      id="stock-requests"
+      class="admin-section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <p class="eyebrow">
+            CUSTOMER REQUESTS
+          </p>
+
+          <h2>
+            Stock Requests
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Customer
+              </th>
+
+              <th>
+                Phone
+              </th>
+
+              <th>
+                Product
+              </th>
+
+              <th>
+                Requested
+              </th>
+
+              <th>
+                Additional
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Date
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="stockRequestsBody">
+
+            <tr>
+
+              <td
+                colspan="7"
+                class="empty-state"
+              >
+                Loading stock requests…
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         ORDERS
+    ==================================================== -->
+
+    <section
+      id="orders"
+      class="admin-section"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <p class="eyebrow">
+            CUSTOMER ORDERS
+          </p>
+
+          <h2>
+            Recent Orders
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Order
+              </th>
+
+              <th>
+                Customer
+              </th>
+
+              <th>
+                Delivery Area
+              </th>
+
+              <th>
+                Payment
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Delivery Date
+              </th>
+
+              <th>
+                Date
+              </th>
+
+              <th>
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="ordersBody">
+
+            <tr>
+
+              <td
+                colspan="9"
+                class="empty-state"
+              >
+                Loading orders…
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- =====================================================
+       PRODUCT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-backdrop"
+    id="productModal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+
+      <button
+        type="button"
+        class="close"
+        id="closeModal"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+
+      <p class="eyebrow">
+        PRODUCT MANAGEMENT
+      </p>
+
+
+      <h2 id="modalTitle">
+        Add Product
+      </h2>
+
+
+      <form id="productForm">
+
+        <input
+          type="hidden"
+          name="id"
+        >
+
+
+        <label>
+
+          Product Name
+
+          <input
+            type="text"
+            name="name"
+            list="productNameOptions"
+            placeholder="Select or type product name"
+            autocomplete="off"
+            required
+          >
+
+        </label>
+
+
+        <datalist id="productNameOptions">
+
+          <option value="VALAR Classic T-Shirt"></option>
+
+          <option value="VALAR Hoodie"></option>
+
+          <option value="VALAR Cap"></option>
+
+          <option value="VALAR Trousers"></option>
+
+          <option value="Custom Product"></option>
+
+        </datalist>
+
+
+        <label>
+
+          Category
+
+          <select
+            name="category"
+            required
+          >
+
+            <option value="T-Shirts">
+              T-Shirts
+            </option>
+
+            <option value="Hoodies">
+              Hoodies
+            </option>
+
+            <option value="Caps">
+              Caps
+            </option>
+
+            <option value="Trousers">
+              Trousers
+            </option>
+
+            <option value="Other">
+              Other
+            </option>
+
+          </select>
+
+        </label>
+
+
+        <label>
+
+          Price (MWK)
+
+          <input
+            type="number"
+            name="price"
+            min="0"
+            step="1"
+            placeholder="0"
+            required
+          >
+
+        </label>
+
+
+        <label>
+
+          Stock
+
+          <input
+            type="number"
+            name="stock"
+            min="0"
+            step="1"
+            placeholder="0"
+            required
+          >
+
+        </label>
+
+
+        <label>
+
+          Sizes
+
+          <input
+            type="text"
+            name="sizes"
+            list="sizeOptions"
+            placeholder="S, M, L, XL"
+            autocomplete="off"
+          >
+
+        </label>
+
+
+        <datalist id="sizeOptions">
+
+          <option value="S"></option>
+
+          <option value="M"></option>
+
+          <option value="L"></option>
+
+          <option value="XL"></option>
+
+        </datalist>
+
+
+        <label>
+
+          Colours
+
+          <input
+            type="text"
+            name="colors"
+            list="colorOptions"
+            placeholder="Select or type colour"
+            autocomplete="off"
+          >
+
+        </label>
+
+
+        <datalist id="colorOptions">
+
+          <option value="Black"></option>
+
+          <option value="White"></option>
+
+          <option value="Red"></option>
+
+          <option value="Blue"></option>
+
+          <option value="Green"></option>
+
+          <option value="Yellow"></option>
+
+          <option value="Grey"></option>
+
+          <option value="Brown"></option>
+
+          <option value="Beige"></option>
+
+          <option value="Navy"></option>
+
+          <option value="Maroon"></option>
+
+          <option value="Black, White"></option>
+
+          <option value="Black, White, Maroon"></option>
+
+        </datalist>
+
+
+        <label>
+
+          Product Image
+
+          <input
+            type="file"
+            name="image"
+            id="productImage"
+            accept="image/*"
+          >
+
+        </label>
+
+
+        <div
+          id="imagePreview"
+          class="image-preview"
+          hidden
+        >
+
+          <img
+            id="imagePreviewImg"
+            src=""
+            alt="Product image preview"
+          >
+
+        </div>
+
+
+        <label class="check">
+
+          <input
+            type="checkbox"
+            name="active"
+            checked
+          >
+
+          <span>
+            Active
+          </span>
+
+        </label>
+
+
+        <button
+          type="submit"
+          class="primary full"
+        >
+          SAVE PRODUCT
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       SUCCESS MESSAGE MODAL
+  ====================================================== -->
+
+  <div
+    class="valar-message-backdrop"
+    id="valarMessageBackdrop"
+  >
+
+    <div
+      class="valar-message-modal"
+      id="valarMessageModal"
+    >
+
+      <div
+        class="valar-message-icon"
+        id="valarMessageIcon"
+      >
+        ✓
+      </div>
+
+
+      <h3 id="valarMessageTitle">
+        Success
+      </h3>
+
+
+      <p id="valarMessageText">
+        Product updated successfully.
+      </p>
+
+
+      <div class="valar-message-actions">
+
+        <button
+          type="button"
+          class="valar-message-ok"
+          id="valarMessageOk"
+        >
+          OK
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       DELETE PRODUCT CONFIRMATION
+  ====================================================== -->
+
+  <div
+    class="valar-confirm-backdrop"
+    id="valarConfirmBackdrop"
+  >
+
+    <div class="valar-confirm-modal">
+
+      <div class="valar-confirm-icon">
+        !
+      </div>
+
+
+      <h3>
+        Delete Product?
+      </h3>
+
+
+      <p id="valarConfirmText">
+        Are you sure you want to delete this product?
+      </p>
+
+
+      <div class="valar-confirm-actions">
+
+        <button
+          type="button"
+          class="valar-cancel-btn"
+          id="valarConfirmCancel"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="valar-confirm-btn"
+          id="valarConfirmDelete"
+        >
+          Confirm
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       DELETE ORDER CONFIRMATION
+  ====================================================== -->
+
+  <div
+    class="valar-confirm-backdrop"
+    id="valarOrderConfirmBackdrop"
+  >
+
+    <div class="valar-confirm-modal">
+
+      <div class="valar-confirm-icon">
+        !
+      </div>
+
+
+      <h3>
+        Delete Order?
+      </h3>
+
+
+      <p id="valarOrderConfirmText">
+        Are you sure you want to delete this order?
+      </p>
+
+
+      <div class="valar-confirm-actions">
+
+        <button
+          type="button"
+          class="valar-cancel-btn"
+          id="valarOrderConfirmCancel"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="valar-confirm-btn"
+          id="valarOrderConfirmDelete"
+        >
+          Delete Order
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ADMIN JAVASCRIPT
+  ====================================================== -->
+
+  <script src="admin.js"></script>
+
+</body>
+
+</html>

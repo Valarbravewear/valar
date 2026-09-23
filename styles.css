@@ -1,0 +1,1442 @@
+/* =========================================================
+   VALAR — BRAVE & WEAR
+   MAIN WEBSITE STYLES
+========================================================= */
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --black: #050505;
+  --white: #ffffff;
+  --soft: #f3f3f0;
+  --line: #d9d9d5;
+  --muted: #707070;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", Arial, sans-serif;
+  background: var(--soft);
+  color: var(--black);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.topbar {
+  height: 76px;
+
+  background: var(--black);
+  color: var(--white);
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 5%;
+
+  position: sticky;
+  top: 0;
+
+  z-index: 20;
+
+  border-bottom: 1px solid #222;
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.brand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-right: auto;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #fff;
+
+  background: #000;
+}
+
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.brand strong {
+  display: block;
+
+  font-size: 18px;
+
+  font-weight: 800;
+
+  letter-spacing: 4px;
+}
+
+.brand small {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 8px;
+
+  font-weight: 600;
+
+  letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   CART BUTTON
+========================================================= */
+
+.cart-button {
+  border: 1px solid #fff;
+
+  background: #fff;
+
+  color: #000;
+
+  padding: 10px 15px;
+
+  cursor: pointer;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
+
+  text-transform: uppercase;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.cart-button:hover {
+  background: #000;
+  color: #fff;
+}
+
+.cart-button span {
+  display: inline-grid;
+
+  place-items: center;
+
+  width: 20px;
+  height: 20px;
+
+  margin-left: 5px;
+
+  background: #000;
+
+  color: #fff;
+
+  border-radius: 50%;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+  min-height: auto;
+
+  background: var(--black);
+
+  color: var(--white);
+
+  display: flex;
+  align-items: center;
+
+  padding: 32px 8% 34px;
+
+  overflow: hidden;
+}
+
+.hero-copy {
+  max-width: 680px;
+
+  margin: 0;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 2.5px;
+
+  line-height: 1.4;
+
+  text-transform: uppercase;
+}
+
+.hero-text {
+  max-width: 850px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: left;
+  word-spacing: normal;
+  letter-spacing: normal;
+}
+
+
+/* =========================================================
+   TICKER
+========================================================= */
+
+.ticker {
+  height: 52px;
+
+  background: #fff;
+
+  border-top: 1px solid var(--line);
+
+  border-bottom: 1px solid var(--line);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-around;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 2.5px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.button {
+  display: inline-block;
+
+  border: 0;
+
+  padding: 15px 23px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  cursor: pointer;
+
+  text-transform: uppercase;
+}
+
+.button-dark {
+  background: #000;
+
+  color: #fff;
+}
+
+.full {
+  width: 100%;
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.section {
+  padding: 80px 8%;
+}
+
+.section-head {
+  display: flex;
+
+  align-items: end;
+
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-bottom: 35px;
+}
+
+.section h2 {
+  margin: 0;
+
+  font-size: clamp(38px, 6vw, 75px);
+
+  font-weight: 800;
+
+  line-height: 0.95;
+
+  letter-spacing: -3px;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.filters {
+  display: flex;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+}
+
+.filter {
+  border: 1px solid #bbb;
+
+  background: transparent;
+
+  padding: 9px 14px;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.filter.active,
+.filter:hover {
+  background: #000;
+
+  color: #fff;
+
+  border-color: #000;
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+.product-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 18px;
+}
+
+.product-card {
+  background: #fff;
+
+  border: 1px solid var(--line);
+
+  overflow: hidden;
+}
+
+.product-photo {
+  height: 360px;
+
+  background: #e8e8e5;
+
+  display: grid;
+
+  place-items: center;
+
+  overflow: hidden;
+}
+
+.product-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.placeholder {
+  font-size: 50px;
+
+  font-weight: 900;
+
+  letter-spacing: -4px;
+
+  transform: rotate(-5deg);
+}
+
+.product-info {
+  padding: 18px;
+}
+
+.product-info h3 {
+  margin: 0 0 8px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  line-height: 1.4;
+}
+
+.product-meta {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  font-size: 12px;
+}
+
+.price {
+  font-weight: 800;
+}
+
+.add {
+  width: 100%;
+
+  margin-top: 15px;
+
+  padding: 12px;
+
+  background: #000;
+
+  color: #fff;
+
+  border: 0;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  cursor: pointer;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   STATEMENT
+========================================================= */
+
+.statement {
+  background: #050505;
+
+  color: #fff;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 60px;
+
+  align-items: center;
+}
+
+.statement p:last-child {
+  max-width: 500px;
+
+  margin: 0;
+
+  color: #bbb;
+
+  font-size: 15px;
+
+  line-height: 1.8;
+}
+
+
+/* =========================================================
+   ABOUT
+========================================================= */
+
+.about {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.about-image {
+  background: #fff;
+  display: flex;
+  justify-content: center;
+}
+
+.about-image img {
+  width: 100%;
+  max-height: 430px;
+  object-fit: contain;
+}
+
+.about-content h2 {
+  text-align: center;
+}
+
+.about p:not(.eyebrow) {
+  max-width: 540px;
+  color: #555;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.site-footer {
+  position: relative;
+
+  background: #050505;
+
+  color: #fff;
+
+  padding: 55px 8% 30px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 35px;
+
+  text-align: center;
+
+  border-top: 1px solid #1c1c1c;
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.footer-brand {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.footer-brand strong {
+  font-size: 30px;
+
+  font-weight: 800;
+
+  letter-spacing: 7px;
+
+  color: #fff;
+}
+
+.footer-brand p {
+  margin: 0;
+
+  color: #999;
+
+  font-size: 12px;
+
+  letter-spacing: 3px;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   COPYRIGHT
+========================================================= */
+
+.footer-bottom {
+  width: 100%;
+
+  padding-top: 25px;
+
+  border-top: 1px solid #1c1c1c;
+}
+
+.footer-bottom p {
+  margin: 0;
+
+  color: #777;
+
+  font-size: 11px;
+
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   SUBTLE ADMIN ACCESS
+========================================================= */
+
+.hidden-admin-link {
+  position: absolute;
+
+  right: 8%;
+
+  bottom: 30px;
+
+  color: #444;
+
+  text-decoration: none;
+
+  font-size: 10px;
+
+  letter-spacing: 1px;
+
+  opacity: 0.35;
+
+  transition: all 0.3s ease;
+}
+
+.hidden-admin-link:hover {
+  color: #aaa;
+
+  opacity: 1;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .site-footer {
+    padding: 45px 6% 25px;
+
+    gap: 30px;
+  }
+
+  .footer-brand strong {
+    font-size: 25px;
+
+    letter-spacing: 5px;
+  }
+
+  .footer-brand p {
+    font-size: 10px;
+
+    letter-spacing: 2px;
+  }
+
+  .footer-bottom {
+    padding-top: 20px;
+  }
+
+  .hidden-admin-link {
+    position: static;
+
+    font-size: 9px;
+  }
+
+}
+
+
+/* =========================================================
+   SUBTLE ADMIN ACCESS
+========================================================= */
+
+.hidden-admin-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #777;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-decoration: none;
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+}
+
+.hidden-admin-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+  grid-column: 1 / -1;
+
+  padding: 70px;
+
+  color: #777;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   CART / MODAL BACKDROPS
+========================================================= */
+
+.drawer-backdrop,
+.modal-backdrop {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 30;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 0.25s ease;
+}
+
+.drawer-backdrop.show,
+.modal-backdrop.show {
+  opacity: 1;
+
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   CART DRAWER
+========================================================= */
+
+.cart-drawer {
+  position: fixed;
+
+  top: 0;
+  right: 0;
+
+  z-index: 31;
+
+  width: min(430px, 100%);
+
+  height: 100%;
+
+  background: #fff;
+
+  display: flex;
+
+  flex-direction: column;
+
+  transform: translateX(100%);
+
+  transition: transform 0.25s ease;
+}
+
+.cart-drawer.show {
+  transform: translateX(0);
+}
+
+.drawer-head {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 25px;
+
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-head h2 {
+  margin: 0;
+
+  font-size: 24px;
+
+  font-weight: 800;
+}
+
+.icon-button,
+.modal-close {
+  border: 0;
+
+  background: none;
+
+  font-size: 28px;
+
+  cursor: pointer;
+}
+
+.cart-items {
+  flex: 1;
+
+  padding: 20px;
+
+  overflow: auto;
+}
+
+
+/* =========================================================
+   CART ITEMS
+========================================================= */
+
+.cart-item {
+  display: grid;
+
+  grid-template-columns: 65px 1fr auto;
+
+  gap: 12px;
+
+  align-items: center;
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid #eee;
+}
+
+.mini-photo {
+  height: 65px;
+
+  background: #eee;
+
+  display: grid;
+
+  place-items: center;
+
+  overflow: hidden;
+
+  font-weight: 800;
+}
+
+.mini-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.cart-item h4 {
+  margin: 0 0 5px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.cart-item small {
+  color: #777;
+}
+
+.remove {
+  border: 0;
+
+  background: none;
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+}
+
+.qty button {
+  width: 24px;
+  height: 24px;
+
+  border: 0;
+
+  background: #eee;
+
+  cursor: pointer;
+}
+
+.cart-bottom {
+  padding: 20px;
+
+  border-top: 1px solid var(--line);
+}
+
+.total-row {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 15px;
+}
+
+
+/* =========================================================
+   CHECKOUT MODAL
+========================================================= */
+
+.modal-backdrop {
+  display: grid;
+
+  place-items: center;
+
+  padding: 20px;
+}
+
+.modal {
+  position: relative;
+
+  width: min(520px, 100%);
+
+  max-height: 90vh;
+
+  padding: 30px;
+
+  background: #fff;
+
+  overflow: auto;
+}
+
+.modal h2 {
+  margin: 0 0 25px;
+
+  font-size: 38px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing: -2px;
+}
+
+.modal-close {
+  position: absolute;
+
+  top: 12px;
+  right: 15px;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+label {
+  display: block;
+
+  margin: 15px 0;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+}
+
+input,
+textarea,
+select {
+  display: block;
+
+  width: 100%;
+
+  margin-top: 7px;
+
+  padding: 12px;
+
+  border: 1px solid #ccc;
+
+  outline: none;
+
+  background: #fafafa;
+
+  font-size: 14px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #000;
+}
+
+
+/* =========================================================
+   CHECKOUT SUMMARY
+========================================================= */
+
+.checkout-summary {
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 18px 0;
+
+  margin: 20px 0;
+
+  border-top: 1px solid #ddd;
+
+  border-bottom: 1px solid #ddd;
+}
+
+.small-note {
+  margin-top: 15px;
+
+  color: #777;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+.order-result {
+  margin-top: 15px;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .topbar {
+    padding: 0 18px;
+
+    gap: 10px;
+  }
+
+  .hero {
+    min-height: auto;
+
+    padding: 28px 22px 30px;
+  }
+
+  .hero-copy {
+    max-width: 600px;
+  }
+
+  .hero-text {
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: justify;
+    text-justify: inter-word;
+  }
+
+  .section {
+    padding: 65px 22px;
+  }
+
+  .section-head {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-photo {
+    height: 250px;
+  }
+
+  .statement,
+  .about {
+    grid-template-columns: 1fr;
+
+    gap: 30px;
+  }
+
+  footer {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    padding: 35px 22px 45px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .topbar {
+    height: 68px;
+
+    padding: 0 16px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand strong {
+    font-size: 15px;
+
+    letter-spacing: 3px;
+  }
+
+  .brand small {
+    font-size: 7px;
+
+    letter-spacing: 1.5px;
+  }
+
+  .cart-button {
+    padding: 8px 10px;
+
+    font-size: 10px;
+  }
+
+  .hero {
+    min-height: auto;
+
+    padding: 26px 22px 28px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+
+    letter-spacing: 2px;
+  }
+
+  .hero-text {
+    font-size: 15px;
+
+    line-height: 1.65;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-photo {
+    height: 320px;
+  }
+
+  .ticker {
+    overflow: hidden;
+
+    gap: 35px;
+
+    justify-content: flex-start;
+
+    padding: 0 20px;
+
+    white-space: nowrap;
+  }
+
+  .modal {
+    padding: 25px 20px;
+  }
+
+  .modal h2 {
+    font-size: 32px;
+  }
+
+  footer {
+    padding-bottom: 50px;
+  }
+
+  .hidden-admin-link {
+    right: 8px;
+
+    bottom: 8px;
+
+    font-size: 9px;
+  }
+}
+.about-content {
+  max-width: 620px;
+}
+
+.about-lead {
+  font-size: 18px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  flex-wrap: nowrap;
+}
+
+.social-button {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  color: #ffffff;
+  text-decoration: none;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+/* Facebook */
+.social-button.facebook {
+  background: #1877F2;
+  border-color: #1877F2;
+}
+
+.social-button.facebook:hover {
+  background: #1877F2;
+  border-color: #1877F2;
+}
+
+/* Instagram */
+.social-button.instagram {
+  background: #D62976;
+  border-color: #D62976;
+}
+
+.social-button.instagram:hover {
+  background: #D62976;
+  border-color: #D62976;
+}
+
+/* WhatsApp */
+.social-button.whatsapp {
+  background: #25D366;
+  border-color: #25D366;
+}
+
+.social-button.whatsapp:hover {
+  background: #25D366;
+  border-color: #25D366;
+}
+/* =========================================================
+   CHECKOUT MODAL
+========================================================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+
+  z-index: 100;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+
+.modal-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+
+.modal {
+  position: relative;
+
+  width: min(520px, 100%);
+
+  max-height: 90vh;
+
+  padding: 30px;
+
+  background: #fff;
+
+  overflow-y: auto;
+}
+/* =========================================================
+   STOCK REQUEST MODAL
+========================================================= */
+
+#stockRequestBackdrop {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+#stockRequestBackdrop .modal {
+  width: min(100%, 520px);
+}
+
+#stockRequestForm {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+#stockRequestForm label {
+  display: grid;
+  gap: 8px;
+}
+
+#stockRequestForm input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+#stockRequestBackdrop .checkout-summary {
+  margin-top: 8px;
+}
+/* =========================================================
+   MOBILE MONEY PHONE INPUT
+========================================================= */
+
+#mobileMoneyFields {
+  margin-top: 10px;
+}
+
+#mobileMoneyFields label {
+  display: block;
+  width: 100%;
+}
+
+#mobileMoneyPhone {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  margin-top: 8px;
+
+  box-sizing: border-box;
+
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+
+  color: #111;
+  background: #fff;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#mobileMoneyPhone:focus {
+  border-color: #650d22;
+  box-shadow: 0 0 0 3px rgba(101, 13, 34, 0.10);
+}
+
+#mobileMoneyPhone::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+#mobileMoneyFields .small-note {
+  margin-top: 7px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MOBILE MONEY INPUT — SMALL SCREENS
+========================================================= */
+
+@media (max-width: 600px) {
+
+  #mobileMoneyPhone {
+    min-height: 50px;
+    padding: 13px 14px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+}
