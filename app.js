@@ -13,7 +13,7 @@ let selectedCategory = "All";
 
 /*
    Current quantity being requested from VALAR.
-   This is the ADDITIONAL quantity needed beyond
+   This is the additional quantity needed beyond
    the currently available stock.
 */
 let stockRequestQuantity = 1;
@@ -910,7 +910,8 @@ function openCheckout() {
 
   if (!cart.length) {
 
-    alert(
+    showValarMessage(
+      "Cart is empty",
       "Your cart is empty."
     );
 
@@ -933,8 +934,7 @@ function openCheckout() {
 
 
   /*
-     Clear any previous order confirmation
-     when opening a new checkout.
+     Clear previous order confirmation.
   */
 
   const orderResult =
@@ -969,7 +969,7 @@ function openCheckout() {
 
 
   /*
-     Set the payment method back to
+     Set payment method back to
      Cash on delivery / pickup.
   */
 
@@ -982,7 +982,6 @@ function openCheckout() {
 
 
   updatePaymentInstructions();
-
 
   closeCart();
 
@@ -1504,25 +1503,30 @@ document
 
 /* =========================================================
    SUBMIT STOCK REQUEST
+   CUSTOMER → SUPABASE → VALAR ADMIN
 ========================================================= */
 
 document
   .getElementById("stockRequestForm")
   ?.addEventListener(
     "submit",
-    async function(event) {
+    async function (event) {
 
       event.preventDefault();
 
 
+      /* ---------------------------------------------------
+         CHECK SUPABASE CONNECTION
+      --------------------------------------------------- */
+
       if (!window.valarSupabase) {
 
-        alert(
-          "VALAR store connection is not available."
+        showValarMessage(
+          "Connection problem",
+          "VALAR could not connect to the store right now. Please try again."
         );
 
         return;
-
       }
 
 
@@ -1550,10 +1554,6 @@ document
         );
 
 
-      const extraQuantity =
-        requestedQuantity;
-
-
       const customerName =
         String(
           nameInput?.value || ""
@@ -1566,21 +1566,28 @@ document
         ).trim();
 
 
+      /* ---------------------------------------------------
+         VALIDATE CUSTOMER DETAILS
+      --------------------------------------------------- */
+
       if (
         !customerName ||
         !phone ||
-        !productId ||
-        extraQuantity <= 0
+        !productId
       ) {
 
-        alert(
-          "Please complete all fields."
+        showValarMessage(
+          "Complete your request",
+          "Please enter your name and phone number."
         );
 
         return;
-
       }
 
+
+      /* ---------------------------------------------------
+         FIND PRODUCT
+      --------------------------------------------------- */
 
       const product =
         products.find(
@@ -1592,12 +1599,12 @@ document
 
       if (!product) {
 
-        alert(
-          "This product could not be found."
+        showValarMessage(
+          "Product unavailable",
+          "This product could not be found. Please refresh the page and try again."
         );
 
         return;
-
       }
 
 
@@ -1620,7 +1627,12 @@ document
 
       try {
 
+        /* =================================================
+           SEND STOCK REQUEST TO SUPABASE
+        ================================================= */
+
         const {
+          data,
           error
         } =
           await window.valarSupabase
@@ -1645,25 +1657,86 @@ document
               requested_quantity:
                 requestedQuantity,
 
-              additional_quantity:
-                extraQuantity,
+              /*
+                 IMPORTANT:
+                 Supabase requires the column
+                 "extra_quantity".
+              */
+
+              extra_quantity:
+                requestedQuantity,
 
               status:
                 "pending"
 
-            });
+            })
+            .select()
+            .single();
 
+
+        /* =================================================
+           SHOW THE REAL DATABASE ERROR
+        ================================================= */
 
         if (error) {
 
           console.error(
-            "Stock request error:",
-            error
+            "VALAR STOCK REQUEST ERROR:",
+            {
+              message:
+                error.message,
+
+              details:
+                error.details,
+
+              hint:
+                error.hint,
+
+              code:
+                error.code
+            }
           );
+
+
+          const realMessage =
+            error.message ||
+            "Unknown database error.";
+
+          const errorCode =
+            error.code
+              ? ` (Code: ${error.code})`
+              : "";
+
+          const errorDetails =
+            error.details
+              ? ` ${error.details}`
+              : "";
+
+          const errorHint =
+            error.hint
+              ? ` ${error.hint}`
+              : "";
+
+
+          showValarMessage(
+            "Request not sent",
+            `${realMessage}${errorCode}${errorDetails}${errorHint}`
+          );
+
 
           throw error;
 
         }
+
+
+        /* =================================================
+           SUCCESS
+        ================================================= */
+
+        console.log(
+          "VALAR stock request sent to admin:",
+          data
+        );
 
 
         const result =
@@ -1676,32 +1749,41 @@ document
 
           result.innerHTML = `
 
-            <strong>
-              Request sent successfully
-            </strong>
+            <div class="payment-instructions">
 
-            <p>
-              Your request for
               <strong>
-                ${escapeHtml(
-                  String(requestedQuantity)
-                )}
+                Request sent successfully
               </strong>
-              item(s) has been sent to VALAR.
-            </p>
 
-            <p>
-              We will contact you on
-              <strong>
-                ${escapeHtml(phone)}
-              </strong>
-              when the stock is available.
-            </p>
+              <p>
+                Your request for
+                <strong>
+                  ${escapeHtml(
+                    String(requestedQuantity)
+                  )}
+                </strong>
+                additional item(s) has been
+                sent to VALAR.
+              </p>
+
+              <p>
+                We will contact you on
+                <strong>
+                  ${escapeHtml(phone)}
+                </strong>
+                when the stock is available.
+              </p>
+
+            </div>
 
           `;
 
         }
 
+
+        /* -------------------------------------------------
+           CLEAR CUSTOMER FIELDS
+        ------------------------------------------------- */
 
         if (nameInput) {
           nameInput.value = "";
@@ -1712,62 +1794,62 @@ document
         }
 
 
-        stockRequestQuantity = 1;
+        stockRequestQuantity =
+          1;
 
         updateStockRequestQuantity();
+
+
+        /* -------------------------------------------------
+           KEEP SUCCESS STATE
+        ------------------------------------------------- */
+
+        if (submitButton) {
+
+          submitButton.disabled =
+            true;
+
+          submitButton.textContent =
+            "REQUEST SENT";
+
+        }
 
       }
 
       catch (error) {
 
         console.error(
-          "Unable to send stock request:",
+          "Unable to send VALAR stock request:",
           error
         );
 
 
-        alert(
-          "We could not send your stock request. Please try again."
-        );
+        /*
+           The detailed Supabase error has
+           already been displayed above.
+        */
 
-      }
+        if (
+          !error?.message ||
+          !error?.code
+        ) {
 
-      finally {
+          showValarMessage(
+            "Request not sent",
+            error?.message ||
+            "We could not send your stock request right now. Please try again."
+          );
+
+        }
+
 
         if (submitButton) {
 
-          const result =
-            document.getElementById(
-              "stockRequestResult"
-            );
+          submitButton.disabled =
+            false;
 
-
-          const successful =
-            result &&
-            result.textContent.includes(
-              "Request sent successfully"
-            );
-
-
-          if (successful) {
-
-            submitButton.disabled =
-              true;
-
-            submitButton.textContent =
-              "REQUEST SENT";
-
-          }
-
-          else {
-
-            submitButton.disabled =
-              false;
-
-            submitButton.textContent =
-              "SEND REQUEST";
-
-          }
+          submitButton.textContent =
+            "SEND REQUEST";
 
         }
 
@@ -1775,6 +1857,144 @@ document
 
     }
   );
+
+
+/* =========================================================
+   VALAR MESSAGE
+   Replaces browser alert()
+========================================================= */
+
+function showValarMessage(
+  title,
+  message
+) {
+
+  document
+    .getElementById("valarMessageBackdrop")
+    ?.remove();
+
+
+  const backdrop =
+    document.createElement("div");
+
+  backdrop.id =
+    "valarMessageBackdrop";
+
+  backdrop.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.55);
+  `;
+
+
+  const box =
+    document.createElement("div");
+
+  box.style.cssText = `
+    width:min(100%,420px);
+    background:#fff;
+    color:#111;
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+  `;
+
+
+  box.innerHTML = `
+
+    <div
+      style="
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:3px;
+        margin-bottom:12px;
+      "
+    >
+      VALAR
+    </div>
+
+
+    <h3
+      style="
+        margin:0 0 10px;
+        font-size:24px;
+      "
+    >
+      ${escapeHtml(title)}
+    </h3>
+
+
+    <p
+      style="
+        margin:0 0 22px;
+        line-height:1.6;
+        color:#555;
+        word-break:break-word;
+      "
+    >
+      ${escapeHtml(message)}
+    </p>
+
+
+    <button
+      type="button"
+      id="closeValarMessage"
+      style="
+        width:100%;
+        border:0;
+        background:#000;
+        color:#fff;
+        padding:15px;
+        border-radius:10px;
+        font-weight:800;
+        cursor:pointer;
+      "
+    >
+      OK
+    </button>
+
+  `;
+
+
+  backdrop.appendChild(box);
+
+  document.body.appendChild(backdrop);
+
+
+  document
+    .getElementById("closeValarMessage")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        backdrop.remove();
+
+      }
+    );
+
+
+  backdrop.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target ===
+        backdrop
+      ) {
+
+        backdrop.remove();
+
+      }
+
+    }
+  );
+
+}
 
 
 /* =========================================================
@@ -2023,7 +2243,8 @@ checkoutForm?.addEventListener(
 
     if (!window.valarSupabase) {
 
-      alert(
+      showValarMessage(
+        "Connection problem",
         "The VALAR store is not connected to Supabase."
       );
 
@@ -2033,7 +2254,8 @@ checkoutForm?.addEventListener(
 
     if (!cart.length) {
 
-      alert(
+      showValarMessage(
+        "Cart is empty",
         "Your cart is empty."
       );
 
@@ -2070,7 +2292,8 @@ checkoutForm?.addEventListener(
       cart.length
     ) {
 
-      alert(
+      showValarMessage(
+        "Stock changed",
         "One or more products in your cart are no longer available. Please review your cart."
       );
 
@@ -2128,7 +2351,8 @@ checkoutForm?.addEventListener(
       !payment
     ) {
 
-      alert(
+      showValarMessage(
+        "Complete checkout",
         "Please complete all checkout fields."
       );
 
@@ -2147,7 +2371,8 @@ checkoutForm?.addEventListener(
       "Cash on delivery / pickup"
     ) {
 
-      alert(
+      showValarMessage(
+        "Payment method",
         "Please select Cash on delivery / pickup."
       );
 
@@ -2165,7 +2390,8 @@ checkoutForm?.addEventListener(
       total <= 0
     ) {
 
-      alert(
+      showValarMessage(
+        "Invalid total",
         "Your order total is invalid."
       );
 
@@ -2270,12 +2496,6 @@ checkoutForm?.addEventListener(
       this.reset();
 
 
-      /*
-         The payment select is now reset to
-         "Choose payment", but the order
-         confirmation remains visible below.
-      */
-
       if (paymentInstructions) {
 
         paymentInstructions.hidden =
@@ -2300,10 +2520,7 @@ checkoutForm?.addEventListener(
 
 
       /*
-         IMPORTANT:
          Do NOT close the checkout modal.
-         The customer needs to see the
-         order confirmation.
       */
 
       return;
@@ -2318,8 +2535,24 @@ checkoutForm?.addEventListener(
       );
 
 
-      alert(
-        "We could not place your order. Please try again."
+      showValarMessage(
+        "Order not placed",
+        error?.message ===
+          "ORDER_CREATE_FAILED"
+
+          ? "We could not create your order right now. Please try again."
+
+          : error?.message ===
+            "NO_ORDER_ITEMS"
+
+          ? "Your order contains no valid items."
+
+          : error?.message ===
+            "ITEM_CREATE_FAILED"
+
+          ? "Your order could not be saved. Please try again."
+
+          : "We could not place your order. Please try again."
       );
 
     }
