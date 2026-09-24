@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Payment Verification | VALAR</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #090909;
+      --dark: #111111;
+      --gold: #d5b15a;
+      --white: #ffffff;
+      --muted: #a8a8a8;
+      --green: #55c878;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      padding: 42px 28px;
+      text-align: center;
+      background: var(--dark);
+      border: 1px solid #292929;
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 24px;
+      object-fit: contain;
+    }
+
+    .icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: 34px;
+      font-weight: bold;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+
+    p {
+      margin: 10px 0;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    #orderInfo {
+      margin: 22px 0;
+      padding: 14px;
+      border-radius: 10px;
+      background: #191919;
+      color: var(--white);
+      font-size: 14px;
+    }
+
+    #status {
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 13px 24px;
+      border-radius: 8px;
+      background: var(--gold);
+      color: #111;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="card">
+
+    <div class="icon">✓</div>
+
+    <h1>PAYMENT RECEIVED</h1>
+
+    <p>
+      Your payment request has been completed.
+    </p>
+
+    <div id="orderInfo">
+      Order:
+      <strong id="orderNumber">Checking...</strong>
+    </div>
+
+    <p id="status">
+      Verifying your payment with VALAR...
+    </p>
+
+    <p>
+      Please wait while we confirm the transaction.
+    </p>
+
+    <a
+      class="button"
+      href="https://valarbravewear.github.io/valar/"
+    >
+      RETURN TO VALAR
+    </a>
+
+  </main>
+
+  <script>
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const orderNumber =
+      params.get("order");
+
+    const orderElement =
+      document.getElementById(
+        "orderNumber"
+      );
+
+    const statusElement =
+      document.getElementById(
+        "status"
+      );
+
+
+    if (orderNumber) {
+
+      orderElement.textContent =
+        orderNumber;
+
+      statusElement.textContent =
+        "Payment received. Your order is being confirmed.";
+
+    } else {
+
+      orderElement.textContent =
+        "Not provided";
+
+      statusElement.textContent =
+        "Payment was completed. Please return to VALAR and check your order status.";
+
+    }
+  </script>
+
+</body>
+</html>

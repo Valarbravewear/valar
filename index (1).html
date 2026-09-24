@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VALAR Admin</title><link rel="stylesheet" href="admin.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script></head>
+<body><div class="admin-shell">
+<aside><div class="admin-brand">VALAR<small>ADMIN</small></div><a class="active" href="index.html">Dashboard</a><a href="#products">Products</a><a href="#orders">Orders</a><button id="logout">Logout</button></aside>
+<main><header><div><p class="eyebrow">BRAVE &amp; WEAR</p><h1>Dashboard</h1></div><span id="adminEmail"></span></header>
+<section class="stats"><div><span>Products</span><strong id="productCount">0</strong></div><div><span>Orders</span><strong id="orderCount">0</strong></div><div><span>Sales</span><strong id="salesTotal">MWK 0</strong></div></section>
+<section id="products"><div class="section-head"><h2>Products</h2><button class="primary" id="newProduct">+ ADD PRODUCT</button></div>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Active</th><th></th></tr></thead><tbody id="productsBody"></tbody></table></div></section>
+<section id="orders"><div class="section-head"><h2>Recent Orders</h2></div><div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section>
+</main></div>
+<div class="modal-backdrop" id="productModal"><div class="modal"><button class="close" id="closeModal">×</button><h2 id="modalTitle">Add Product</h2>
+<form id="productForm"><input type="hidden" name="id"><label>Name<input name="name" required></label><label>Category<select name="category"><option>T-Shirts</option><option>Hoodies</option><option>Caps</option><option>Trousers</option><option>Other</option></select></label>
+<label>Price (MWK)<input type="number" min="0" step="1" name="price" required></label><label>Stock<input type="number" min="0" step="1" name="stock" required></label>
+<label>Sizes <input name="sizes" placeholder="S, M, L, XL"></label><label>Colours <input name="colors" placeholder="Black, White"></label><label>Image URL<input name="image_url" placeholder="https://..."></label><label>Description<textarea name="description"></textarea></label>
+<label class="check"><input type="checkbox" name="active" checked> Active</label><button class="primary full">SAVE PRODUCT</button></form></div></div>
+<script src="admin.js"></script></body></html>
